@@ -1,0 +1,3 @@
+[submodule "UnityOctree"]
+	path = UnityOctree
+	url = https://github.com/Nition/UnityOctree.git
