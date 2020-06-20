@@ -44,7 +44,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             _random = new Random(seed);
             _generationParameters = generationParameters;
             _loadedStructure = DungeonStructureConcretizer.ConcretizeStructure(structure, _random);
-            _loadedRooms = DungeonStructureConfigManager.LoadRoomPrototypes(_loadedStructure);
+            _loadedRooms = RoomResourceLoader.LoadRoomPrototypes(_loadedStructure);
             DungeonStructureConfigManager.CollectMetaData(_loadedStructure, _loadedRooms);
 
             if (_generationParameters != null)
