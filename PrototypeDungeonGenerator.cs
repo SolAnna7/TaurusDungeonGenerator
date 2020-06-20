@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using GuildTest.Scripts.Map;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.Component;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.GenerationModel;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure;
@@ -45,7 +44,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             _generationParameters = generationParameters;
             _loadedStructure = DungeonStructureConcretizer.ConcretizeStructure(structure, _random);
             _loadedRooms = RoomResourceLoader.LoadRoomPrototypes(_loadedStructure);
-            DungeonStructureConfigManager.CollectMetaData(_loadedStructure, _loadedRooms);
+            CollectMetaData(_loadedStructure, _loadedRooms);
 
             if (_generationParameters != null)
                 ParameterizeDungeon();
@@ -552,6 +551,25 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
 //            _virtualSpace.DrawAllBounds();
             _virtualSpace.DrawAllObjects();
 //            _virtualSpace.DrawCollisionChecks();
+        }
+       
+        public static void CollectMetaData(DungeonStructure dungeonStructure, Dictionary<string, RoomCollection> roomsByPath)
+        {
+            CollectMetaData(dungeonStructure.StartElement, roomsByPath);
+        }
+
+        private static StructureMetaData CollectMetaData(DungeonNode dungeonElement, Dictionary<string, RoomCollection> roomsByPath)
+        {
+            IList<StructureMetaData> subMetaDataList = dungeonElement.SubElements.Select(s => CollectMetaData(s, roomsByPath)).ToList();
+
+            dungeonElement.StructureMetaData.SubTransitNum = subMetaDataList.Aggregate(dungeonElement.StructureMetaData.IsTransit ? 1 : 0, (sum, e) => sum + e.SubTransitNum);
+            dungeonElement.StructureMetaData.ChildOptionalNodes = dungeonElement.SubElements.SelectMany(e =>
+            {
+                var m = e.StructureMetaData;
+                return m.OptionalNodeData != null ? new List<DungeonNode> {e} : m.ChildOptionalNodes;
+            }).ToList();
+
+            return dungeonElement.StructureMetaData;
         }
 
         public class GenerationParameters
