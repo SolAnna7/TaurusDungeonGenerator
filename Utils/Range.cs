@@ -16,6 +16,12 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils
             Max = max;
         }
 
+        public RangeI(int minmax) : this()
+        {
+            Min = minmax;
+            Max = minmax;
+        }
+
         public int GetRandom(Random r)
         {
             return r.Next(Min, Max + 1);

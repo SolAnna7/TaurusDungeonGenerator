@@ -86,6 +86,10 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
         private void CreateBranches(RoomPrototype firstRoomWrapper)
         {
             var branchDataWrapper = _loadedStructure.StructureMetaData.BranchDataWrapper;
+
+            if (branchDataWrapper == null)
+                return;
+
             var branchPrototypeNames = branchDataWrapper.BranchPrototypeNames;
             var openConnections = new Stack<RoomPrototypeConnection>(CollectOpenConnections(firstRoomWrapper).Shuffle(_random));
 
@@ -259,7 +263,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
 
                 IEnumerable<RoomConnector> possibleNextConnections = selectedRoom
                     .GetConnections()
-                    .Where(c => c.Size.Equals(connection.ParentConnection.Size) && c.Type == connection.ParentConnection.Type).ToList();
+                    .Where(c => c.size.Equals(connection.ParentConnection.size) && c.type == connection.ParentConnection.type).ToList();
 
 
                 foreach (var nextRoomConnection in possibleNextConnections)
@@ -373,7 +377,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             {
                 IEnumerable<RoomConnector> possibleNextConnections = selectedRoom
                     .GetConnections()
-                    .Where(x => x.Size.Equals(selectedConnection.ParentConnection.Size) && x.Type == selectedConnection.ParentConnection.Type).ToList();
+                    .Where(x => x.size.Equals(selectedConnection.ParentConnection.size) && x.type == selectedConnection.ParentConnection.type).ToList();
 
                 foreach (var nextRoomConnection in possibleNextConnections)
                 {
@@ -552,7 +556,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             _virtualSpace.DrawAllObjects();
 //            _virtualSpace.DrawCollisionChecks();
         }
-       
+
         public static void CollectMetaData(DungeonStructure dungeonStructure, Dictionary<string, RoomCollection> roomsByPath)
         {
             CollectMetaData(dungeonStructure.StartElement, roomsByPath);

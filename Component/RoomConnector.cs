@@ -5,11 +5,12 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Component
 {
     public class RoomConnector : MonoBehaviour
     {
-        public Vector2 Size = new Vector2(1, 2);
-        public string Type = "";
+        public Vector2 size = new Vector2(1, 2);
+        public string type = "";
 
-        public GameObject OpenReplacement;
-        public GameObject ClosedReplacement;
+        public GameObject openPrefab;
+        public GameObject closedPrefab;
+        public bool removeOriginal;
 
         public ConnectionState State { get; private set; } = ConnectionState.UNINITIATED;
         public RoomConnector ConnectedRoom { get; private set; } = null;
@@ -29,12 +30,12 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Component
         {
             Color drawColor;
 
-            Vector2 halfSize = Size * 0.5f;
+            Vector2 halfSize = size * 0.5f;
 
             switch (State)
             {
                 case ConnectionState.UNINITIATED:
-                    drawColor = Color.HSVToRGB((Size.x * 227 + Size.y * 491) % 100 / 100.0f, 1, 1);
+                    drawColor = Color.HSVToRGB((size.x * 227 + size.y * 491) % 100 / 100.0f, 1, 1);
                     break;
                 case ConnectionState.CONNECTED:
                     drawColor = Color.green;
@@ -47,13 +48,13 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Component
 
 
             Gizmos.color = drawColor;
-            float lineLength = Mathf.Min(Size.x, Size.y);
+            float lineLength = Mathf.Min(size.x, size.y);
             Gizmos.DrawLine(transform.position + transform.right * halfSize.x, transform.position + transform.forward * lineLength);
             Gizmos.DrawLine(transform.position - transform.right * halfSize.x, transform.position + transform.forward * lineLength);
 
 //            Gizmos.color = drawColor;
-            Vector3 topLeft = transform.position - (transform.right * halfSize.x) + (transform.up * Size.y);
-            Vector3 topRight = transform.position + (transform.right * halfSize.x) + (transform.up * Size.y);
+            Vector3 topLeft = transform.position - (transform.right * halfSize.x) + (transform.up * size.y);
+            Vector3 topRight = transform.position + (transform.right * halfSize.x) + (transform.up * size.y);
             Vector3 bottomLeft = transform.position - (transform.right * halfSize.x);
             Vector3 bottomRight = transform.position + (transform.right * halfSize.x);
 
@@ -63,8 +64,8 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Component
             Gizmos.DrawLine(bottomLeft, topLeft);
 
 
-            Gizmos.DrawLine(topLeft, transform.position + transform.up * (Size.y + lineLength / 4));
-            Gizmos.DrawLine(topRight, transform.position + transform.up * (Size.y + lineLength / 4));
+            Gizmos.DrawLine(topLeft, transform.position + transform.up * (size.y + lineLength / 4));
+            Gizmos.DrawLine(topRight, transform.position + transform.up * (size.y + lineLength / 4));
         }
 
         public static void Connect(RoomConnector c1, RoomConnector c2)

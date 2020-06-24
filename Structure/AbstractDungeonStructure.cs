@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils;
 
 namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
@@ -8,7 +9,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
     {
         public AbstractDungeonElement StartElement { get; private set; }
 
-        public Dictionary<string, AbstractDungeonStructure> EmbeddedDungeons { get; private set; }
+        public Dictionary<string, AbstractDungeonStructure> EmbeddedDungeons { get; set; } = new Dictionary<string, AbstractDungeonStructure>();
 
         public BranchDataWrapper BranchDataWrapper { get; set; }
 
@@ -17,11 +18,23 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
             StartElement = startElement;
         }
 
-        public AbstractDungeonStructure(AbstractDungeonElement startElement, Dictionary<string, AbstractDungeonStructure> embeddedDungeons, BranchDataWrapper branchDataWrapper)
+        public void ValidateStructure()
         {
-            StartElement = startElement;
-            EmbeddedDungeons = embeddedDungeons;
-            BranchDataWrapper = branchDataWrapper;
+            List<string> messages = new List<string>();
+
+            if (BranchDataWrapper != null && EmbeddedDungeons != null)
+            {
+                foreach (var branchPrototypeName in BranchDataWrapper.BranchPrototypeNames)
+                {
+                    if (!EmbeddedDungeons.Keys.Contains(branchPrototypeName))
+                    {
+                        messages.Add($"Branch prototype [{branchPrototypeName}] is not found in embedded dungeons!");
+                    }
+                }
+            }
+
+            if (messages.Count != 0)
+                throw new DungeonValidationException("Error(s) in AbstractDungeonStructure validation:\n - " + String.Join("\n - ", messages));
         }
     }
 
@@ -40,7 +53,8 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         {
             BranchPrototypeNames = branchPrototypeNames;
             BranchCount = branchCount;
-        }        
+        }
+
         public BranchDataWrapper(List<string> branchPrototypeNames, float branchPercentage)
         {
             BranchPrototypeNames = branchPrototypeNames;
@@ -130,6 +144,17 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         {
             Path = path;
             this.subElements = new List<AbstractDungeonElement>(subElements);
+        }
+    }
+
+    public class DungeonValidationException : Exception
+    {
+        public DungeonValidationException(string message) : base(message)
+        {
+        }
+
+        public DungeonValidationException(string message, Exception innerException) : base(message, innerException)
+        {
         }
     }
 }

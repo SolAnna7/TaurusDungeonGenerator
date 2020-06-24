@@ -1,7 +1,9 @@
+using System;
 using System.Linq;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.Component;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.GenerationModel;
 using UnityEngine;
+using Object = UnityEngine.Object;
 using Room = SnowFlakeGamesAssets.TaurusDungeonGenerator.Component.Room;
 
 namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
@@ -55,7 +57,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
                 }
                 else
                 {
-                    // todo branch létrehozás után exception!!
+                    throw new Exception("No other state should be possible");
                 }
             }
 
@@ -64,46 +66,63 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
 
         private static void CreateOpenReplacement(RoomConnector conn)
         {
-            if (conn.OpenReplacement != null)
+            RemoveOriginalChildrenIfNeeded(conn);
+
+            if (conn.openPrefab != null)
             {
-                if (conn.OpenReplacement.scene.name == null)
+                if (conn.openPrefab.scene.name == null)
                 {
-                    Object.Instantiate(conn.OpenReplacement, conn.transform);
+                    Object.Instantiate(conn.openPrefab, conn.transform);
                 }
                 else
                 {
-                    conn.OpenReplacement.SetActive(true);
+                    conn.openPrefab.SetActive(true);
                 }
             }
 
-            if (conn.ClosedReplacement != null)
+            if (conn.closedPrefab != null)
             {
-                if (conn.ClosedReplacement.scene.name != null)
+                if (conn.closedPrefab.scene.name != null)
                 {
-                    Object.Destroy(conn.ClosedReplacement);
+                    Object.Destroy(conn.closedPrefab);
                 }
             }
         }
 
         private static void CreateClosedReplacement(RoomConnector conn)
         {
-            if (conn.ClosedReplacement != null)
+            RemoveOriginalChildrenIfNeeded(conn);
+            
+            if (conn.closedPrefab != null)
             {
-                if (conn.ClosedReplacement.scene.name == null)
+                if (conn.closedPrefab.scene.name == null)
                 {
-                    Object.Instantiate(conn.ClosedReplacement, conn.transform);
+                    Object.Instantiate(conn.closedPrefab, conn.transform);
                 }
                 else
                 {
-                    conn.ClosedReplacement.SetActive(true);
+                    conn.closedPrefab.SetActive(true);
                 }
             }
 
-            if (conn.OpenReplacement != null)
+            if (conn.openPrefab != null)
             {
-                if (conn.OpenReplacement.scene.name != null)
+                if (conn.openPrefab.scene.name != null)
                 {
-                    Object.Destroy(conn.OpenReplacement);
+                    Object.Destroy(conn.openPrefab);
+                }
+            }
+
+        }
+
+        private static void RemoveOriginalChildrenIfNeeded(RoomConnector conn)
+        {
+            if (conn.removeOriginal)
+            {
+                // Object.Destroy(conn.gameObject);
+                foreach (Transform child in conn.transform)
+                {
+                    GameObject.Destroy(child.gameObject);
                 }
             }
         }
