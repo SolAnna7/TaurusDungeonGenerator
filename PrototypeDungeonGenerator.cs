@@ -25,7 +25,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
 
         private readonly Dictionary<string, RoomCollection> _loadedRooms;
 
-        private readonly Stack<GenerationStackItem> _connectionStack;
+        // private readonly Stack<GenerationStackItem> _connectionStack;
 
         private readonly GenerationParameters _generationParameters;
 
@@ -210,99 +210,99 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
 
 
         //nem rekurzív generálási kísérlet, teszteletlen
-        [Obsolete]
-        private void BuildConnection()
-        {
-            _stepsMade++;
-            if (_stepsMade > maxSteps)
-            {
-                throw new MaxStepsReachedException(_stepsMade);
-            }
-
-            var generationItem = _connectionStack.Pop();
-            var connection = generationItem.Connection;
-            var nextNode = generationItem.Node;
-
-            //már van szoba a végén
-            if (connection.ChildRoomPrototype != null)
-            {
-                RoomPrototype baseRoom = connection.ChildRoomPrototype;
-
-                var childConnections = baseRoom.ChildRoomConnections;
-
-                //ha kevesebbet sikerült összekötni, mint amennyit kellett volna, újrakezdjük másik szobával
-                if (childConnections.Count(c => c.State == ConnectionState.CONNECTED) < nextNode.SubElements.Count)
-                {
-                    connection.ClearChild();
-                    _connectionStack.Push(generationItem);
-                }
-
-                return;
-            }
-
-            //új conn
-            if (connection.ChildRoomPrototype == null)
-            {
-                if (generationItem.Rooms == null)
-                {
-                    generationItem.Rooms = new Stack<Room>(GetRandomRooms(nextNode));
-                }
-
-                var possibleRooms = generationItem.Rooms;
-
-                //minden lehetőséget kimerítettünk, nem sikerült megépíteni a szobát
-                if (possibleRooms.Count == 0)
-                {
-                    connection.Fail();
-                    //todo: ha már nem lehet létrehozni megfelelő kapcsolatot, akkor a testvéreket kiírtani a stack-ről
-                    return;
-                }
-
-                var selectedRoom = possibleRooms.Pop();
-                RoomPrototype baseRoom = connection.ParentRoomPrototype;
-
-                IEnumerable<RoomConnector> possibleNextConnections = selectedRoom
-                    .GetConnections()
-                    .Where(c => c.size.Equals(connection.ParentConnection.size) && c.type == connection.ParentConnection.type).ToList();
-
-
-                foreach (var nextRoomConnection in possibleNextConnections)
-                {
-                    var nextRoomConnectionTransform = nextRoomConnection.transform;
-                    var selectedConnectionTransform = connection.ParentConnection.transform;
-
-                    Vector3 newRoomPosition;
-                    Quaternion rotationDiff;
-                    GetNewRoomPosAndRot(baseRoom.GlobalPosition, baseRoom.Rotation, selectedConnectionTransform, nextRoomConnectionTransform, out newRoomPosition, out rotationDiff);
-
-                    var nextRoomWrapper = new RoomPrototype(
-                        nextNode,
-                        selectedRoom,
-                        newRoomPosition,
-                        rotationDiff
-                    );
-
-                    if (!TryAddRoomToVirtualSpace(nextRoomWrapper, baseRoom))
-                    {
-                        //nem sikerült elhelyezni az adott szobát az adott kapcsolattal
-                    }
-                    else
-                    {
-                        nextRoomWrapper.ConnectToParent(nextRoomConnection, connection);
-                        _connectionStack.Push(generationItem);
-
-
-                        var builtRoomChildConnections = nextRoomWrapper.ChildRoomConnections.ToList();
-                        builtRoomChildConnections.Shuffle(_random);
-
-                        for (var i = 0; i < nextNode.SubElements.Count; i++)
-                        {
-                            _connectionStack.Push(new GenerationStackItem(builtRoomChildConnections[i], nextNode.SubElements[i]));
-                        }
-                    }
-                }
-            }
-        }
+        // [Obsolete]
+        // private void BuildConnection()
+        // {
+        //     _stepsMade++;
+        //     if (_stepsMade > maxSteps)
+        //     {
+        //         throw new MaxStepsReachedException(_stepsMade);
+        //     }
+        //
+        //     var generationItem = _connectionStack.Pop();
+        //     var connection = generationItem.Connection;
+        //     var nextNode = generationItem.Node;
+        //
+        //     //már van szoba a végén
+        //     if (connection.ChildRoomPrototype != null)
+        //     {
+        //         RoomPrototype baseRoom = connection.ChildRoomPrototype;
+        //
+        //         var childConnections = baseRoom.ChildRoomConnections;
+        //
+        //         //ha kevesebbet sikerült összekötni, mint amennyit kellett volna, újrakezdjük másik szobával
+        //         if (childConnections.Count(c => c.State == ConnectionState.CONNECTED) < nextNode.SubElements.Count)
+        //         {
+        //             connection.ClearChild();
+        //             _connectionStack.Push(generationItem);
+        //         }
+        //
+        //         return;
+        //     }
+        //
+        //     //új conn
+        //     if (connection.ChildRoomPrototype == null)
+        //     {
+        //         if (generationItem.Rooms == null)
+        //         {
+        //             generationItem.Rooms = new Stack<Room>(GetRandomRooms(nextNode));
+        //         }
+        //
+        //         var possibleRooms = generationItem.Rooms;
+        //
+        //         //minden lehetőséget kimerítettünk, nem sikerült megépíteni a szobát
+        //         if (possibleRooms.Count == 0)
+        //         {
+        //             connection.Fail();
+        //             //todo: ha már nem lehet létrehozni megfelelő kapcsolatot, akkor a testvéreket kiírtani a stack-ről
+        //             return;
+        //         }
+        //
+        //         var selectedRoom = possibleRooms.Pop();
+        //         RoomPrototype baseRoom = connection.ParentRoomPrototype;
+        //
+        //         IEnumerable<RoomConnector> possibleNextConnections = selectedRoom
+        //             .GetConnections()
+        //             .Where(c => c.size.Equals(connection.ParentConnection.size) && c.type == connection.ParentConnection.type).ToList();
+        //
+        //
+        //         foreach (var nextRoomConnection in possibleNextConnections)
+        //         {
+        //             var nextRoomConnectionTransform = nextRoomConnection.transform;
+        //             var selectedConnectionTransform = connection.ParentConnection.transform;
+        //
+        //             Vector3 newRoomPosition;
+        //             Quaternion rotationDiff;
+        //             GetNewRoomPosAndRot(baseRoom.GlobalPosition, baseRoom.Rotation, selectedConnectionTransform, nextRoomConnectionTransform, out newRoomPosition, out rotationDiff);
+        //
+        //             var nextRoomWrapper = new RoomPrototype(
+        //                 nextNode,
+        //                 selectedRoom,
+        //                 newRoomPosition,
+        //                 rotationDiff
+        //             );
+        //
+        //             if (!TryAddRoomToVirtualSpace(nextRoomWrapper, baseRoom))
+        //             {
+        //                 //nem sikerült elhelyezni az adott szobát az adott kapcsolattal
+        //             }
+        //             else
+        //             {
+        //                 nextRoomWrapper.ConnectToParent(nextRoomConnection, connection);
+        //                 _connectionStack.Push(generationItem);
+        //
+        //
+        //                 var builtRoomChildConnections = nextRoomWrapper.ChildRoomConnections.ToList();
+        //                 builtRoomChildConnections.Shuffle(_random);
+        //
+        //                 for (var i = 0; i < nextNode.SubElements.Count; i++)
+        //                 {
+        //                     _connectionStack.Push(new GenerationStackItem(builtRoomChildConnections[i], nextNode.SubElements[i]));
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
 
         private bool BuildPrototypeRoomRecur(RoomPrototype room)
         {
@@ -529,33 +529,27 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             }
         }
 
-        public class MaxStepsReachedException : Exception
+        /// <inheritdoc />
+        private class MaxStepsReachedException : Exception
         {
             public MaxStepsReachedException(int stepNum) : base($"Generation took too many steps {stepNum}")
             {
             }
         }
 
-        private struct GenerationStackItem
-        {
-            public GenerationStackItem(RoomPrototypeConnection connection, DungeonNode node)
-            {
-                Connection = connection;
-                Node = node;
-                Rooms = null;
-            }
-
-            public RoomPrototypeConnection Connection;
-            public DungeonNode Node;
-            public Stack<Room> Rooms;
-        }
-
-        public void Draw()
-        {
-//            _virtualSpace.DrawAllBounds();
-            _virtualSpace.DrawAllObjects();
-//            _virtualSpace.DrawCollisionChecks();
-        }
+        // private struct GenerationStackItem
+        // {
+        //     public GenerationStackItem(RoomPrototypeConnection connection, DungeonNode node)
+        //     {
+        //         Connection = connection;
+        //         Node = node;
+        //         Rooms = null;
+        //     }
+        //
+        //     public RoomPrototypeConnection Connection;
+        //     public DungeonNode Node;
+        //     public Stack<Room> Rooms;
+        // }
 
         public static void CollectMetaData(DungeonStructure dungeonStructure, Dictionary<string, RoomCollection> roomsByPath)
         {

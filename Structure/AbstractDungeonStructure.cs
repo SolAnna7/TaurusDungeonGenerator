@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SnowFlakeGamesAssets.TaurusDungeonGenerator.Exceptions;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils;
 
 namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
@@ -38,29 +39,6 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         }
     }
 
-    public interface IBranchDataHolder
-    {
-        BranchDataWrapper BranchDataWrapper { get; set; }
-    }
-
-    public class BranchDataWrapper
-    {
-        public List<String> BranchPrototypeNames { get; }
-        public int? BranchCount { get; }
-        public float? BranchPercentage { get; }
-
-        public BranchDataWrapper(List<string> branchPrototypeNames, int branchCount)
-        {
-            BranchPrototypeNames = branchPrototypeNames;
-            BranchCount = branchCount;
-        }
-
-        public BranchDataWrapper(List<string> branchPrototypeNames, float branchPercentage)
-        {
-            BranchPrototypeNames = branchPrototypeNames;
-            BranchPercentage = branchPercentage;
-        }
-    }
 
     public abstract class AbstractDungeonElement
     {
@@ -144,17 +122,6 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         {
             Path = path;
             this.subElements = new List<AbstractDungeonElement>(subElements);
-        }
-    }
-
-    public class DungeonValidationException : Exception
-    {
-        public DungeonValidationException(string message) : base(message)
-        {
-        }
-
-        public DungeonValidationException(string message, Exception innerException) : base(message, innerException)
-        {
         }
     }
 }
