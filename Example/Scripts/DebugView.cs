@@ -13,7 +13,7 @@ namespace TaurusDungeonGenerator.Example.Scripts
 
         private GameObject _debugStructure;
 
-        private void Start()
+        private void Awake()
         {
             dungeonDemoRoot.OnDungeonRebuilt += GenerateDebugStructure;
         }
@@ -24,7 +24,7 @@ namespace TaurusDungeonGenerator.Example.Scripts
             _debugStructure.SetActive(drawDebugView);
         }
 
-        public void GenerateDebugStructure(DungeonStructure dungeonStructure)
+        private void GenerateDebugStructure(DungeonStructure dungeonStructure)
         {
             Destroy(_debugStructure);
             _debugStructure = new GameObject("DebugStructure");

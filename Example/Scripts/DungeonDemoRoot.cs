@@ -14,7 +14,7 @@ namespace TaurusDungeonGenerator.Example.Scripts
     {
         public int seed = 1755192844;
 
-        public Text seedText;
+        public InputField seedText;
         public Dropdown structureDropdown;
         public Slider branchSlider;
 
@@ -81,13 +81,14 @@ namespace TaurusDungeonGenerator.Example.Scripts
             }
         }
 
-        public void ReBuildDungeonRandom()
+        private void ReBuildDungeonRandom()
         {
             foreach (Transform child in transform)
                 Destroy(child.gameObject);
 
             seed = Random.Range(int.MinValue, int.MaxValue);
-            BuildDungeon(GetSelectedStructure(), seed, GetBranchPercent());
+            //the value change invokes the regeneration
+            seedText.text = seed.ToString();
         }
 
 
@@ -112,12 +113,12 @@ namespace TaurusDungeonGenerator.Example.Scripts
             return branchSlider?.value ?? 50;
         }
 
-        private void BuildDungeon(AbstractDungeonStructure structure, int seed, float branchPercent)
+        private void BuildDungeon(AbstractDungeonStructure structure, int generationSeed, float branchPercent)
         {
             structure.BranchDataWrapper = new BranchDataWrapper(_branches.Keys.ToList(), branchPercent);
             structure.EmbeddedDungeons = _branches;
 
-            var generator = new PrototypeDungeonGenerator(structure, seed);
+            var generator = new PrototypeDungeonGenerator(structure, generationSeed);
             var prototypeDungeon = generator.BuildPrototype();
             _actualStructure = prototypeDungeon.BuildDungeonInUnitySpace(transform);
             OnDungeonRebuilt?.Invoke(_actualStructure);
