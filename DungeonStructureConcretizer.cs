@@ -21,8 +21,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
         public static DungeonNode ConcretizeDungeonTree(AbstractDungeonElement inputElement, Random random, ReadOnlyDictionary<string, AbstractDungeonStructure> embeddedDungeons)
         {
             {
-                var node = inputElement as NodeElement;
-                if (node != null)
+                if (inputElement is NodeElement node)
                 {
                     DungeonNode copyNode;
                     if (node.IsEndNode)
@@ -43,8 +42,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                 }
             }
             {
-                var connection = inputElement as ConnectionElement;
-                if (connection != null)
+                if (inputElement is ConnectionElement connection)
                 {
                     var connectionLength = connection.Length.GetRandom(random);
                     DungeonNode replacementNode = null;
@@ -75,8 +73,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             }
 
             {
-                var nested = inputElement as NestedDungeon;
-                if (nested != null)
+                if (inputElement is NestedDungeon nested)
                 {
                     DungeonNode[] abstractSubElements = nested.SubElements.Select(element => ConcretizeDungeonTree(element, random, embeddedDungeons)).ToArray();
                     DungeonNode nestedStartNode = ConcretizeStructure(embeddedDungeons[nested.Path], random).StartElement;

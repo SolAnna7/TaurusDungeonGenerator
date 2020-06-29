@@ -1,7 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using SnowFlakeGamesAssets.PiscesConfigLoader;
+using SnowFlakeGamesAssets.PiscesConfigLoader.Component;
+using SnowFlakeGamesAssets.PiscesConfigLoader.Structure;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator;
+using SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure;
+using SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
@@ -22,9 +28,25 @@ namespace TaurusDungeonGenerator.Example.Scripts
 
         void Start()
         {
-            ReBuildDungeonFromSeed();
             structureDropdown.ClearOptions();
-            structureDropdown.AddOptions(_inlineDungeonStructures.Keys.ToList());
+            _dungeonStructures = LoadStructureFromConfig() ?? CreateInlineDungeonStructures();
+            structureDropdown.AddOptions(_dungeonStructures.Keys.ToList());
+            ReBuildDungeonFromSeed();
+        }
+
+        private Dictionary<string, AbstractDungeonStructure> LoadStructureFromConfig()
+        {
+#if SFG_PISCES_CONFIG
+            Dictionary<string, AbstractDungeonStructure> result = new Dictionary<string, AbstractDungeonStructure>();
+            gameObject.AddComponent<ConfigReaderComponent>();
+            GameConfig.InitConfig();
+
+            GameConfig.Query("dungeons").AsNode().GetKeys().ForEach(
+                k => result.Add(k, DungeonStructureConfigManager.BuildFromConfig(new ConfigPath(k))));
+            return result;
+#else
+            return null;
+#endif
         }
 
         private void Update()
@@ -57,8 +79,8 @@ namespace TaurusDungeonGenerator.Example.Scripts
 
         private AbstractDungeonStructure GetSelectedStructure()
         {
-            var key = _inlineDungeonStructures.Keys.ToList()[structureDropdown.value];
-            return _inlineDungeonStructures[key];
+            var key = _dungeonStructures.Keys.ToList()[structureDropdown.value];
+            return _dungeonStructures[key];
         }
 
         private float GetBranchPercent()
@@ -69,8 +91,8 @@ namespace TaurusDungeonGenerator.Example.Scripts
 
         private void BuildDungeon(AbstractDungeonStructure structure, int generationSeed, float branchPercent)
         {
-            structure.BranchDataWrapper = new BranchDataWrapper(_branches.Keys.ToList(), branchPercent);
-            structure.EmbeddedDungeons = _branches;
+            if (structure.BranchDataWrapper != null)
+                structure.BranchDataWrapper.BranchPercentage = branchPercent;
 
             var generator = new PrototypeDungeonGenerator(structure, generationSeed);
             var prototypeDungeon = generator.BuildPrototype();

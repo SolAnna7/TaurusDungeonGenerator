@@ -1,0 +1,95 @@
+﻿dungeons:
+
+  nested-test:
+    start-node:
+      connection: DungeonGenerationTest/Corridors
+      length: 1_2
+      subs:
+        - node: DungeonGenerationTest/MiddleRoom
+
+  graph-test:
+    start-node:
+      node: DungeonGenerationTest/EndRoom
+      subs:
+        - connection: DungeonGenerationTest/Corridors
+          length: 25_30
+          subs:
+            - node: DungeonGenerationTest/Stair
+              subs:
+                - connection: DungeonGenerationTest/Corridors
+                  length: 1_5
+                  subs:
+                    - node: DungeonGenerationTest/MiddleRoom
+                      subs:
+                        - node: DungeonGenerationTest/VerticalRoom
+                          subs:
+                            - nested: nested-test
+                              subs:
+                                - connection: DungeonGenerationTest/Corridors
+                                  length: 1_3
+                                  subs:
+                                    - node: DungeonGenerationTest/EndRoom
+                        - connection: DungeonGenerationTest/Corridors
+                          length: 5
+                          subs:
+                            - node: DungeonGenerationTest/CorrX
+                              subs:
+                                - connection: DungeonGenerationTest/Corridors
+                                  length: 7_9
+                                  subs:
+                                    - node: DungeonGenerationTest/EndRoom
+                                - connection: DungeonGenerationTest/Corridors
+                                  length: 1_3
+                                  subs:
+                                    - node: DungeonGenerationTest/EndRoom
+                                - connection: DungeonGenerationTest/Corridors
+                                  length: 10_15
+                                  subs:
+                                    - node: DungeonGenerationTest/EndRoom
+
+  graph-test-2:
+    inline-nested:
+      branch-test:
+        start-node:
+          connection: DungeonGenerationTest/Corridors
+          length: 1_3
+          subs:
+            - node: DungeonGenerationTest/MiddleRoom
+      branch-test-2:
+        start-node:
+          connection: DungeonGenerationTest/Corridors
+          length: 3_5
+          subs:
+            - node: DungeonGenerationTest/EndRoom
+    branch-prototypes:
+      - branch-test
+      - branch-test-2
+    #    branch-max-num: 10
+    branch-max-percent: 100
+    start-node:
+      node: DungeonGenerationTest/CorrX
+      subs:
+        - connection: DungeonGenerationTest/Corridors
+          optional: true
+          length: 5_10
+          subs:
+            - node: DungeonGenerationTest/EndRoom
+              transit: true
+        - connection: DungeonGenerationTest/Corridors
+          optional: true
+          length: 5
+          subs:
+            - node: DungeonGenerationTest/EndRoom
+              transit: true
+        - connection: DungeonGenerationTest/Corridors
+          optional: true
+          length: 5_10
+          subs:
+            - node: DungeonGenerationTest/EndRoom
+              transit: true
+        - connection: DungeonGenerationTest/Corridors
+          optional: true
+          length: 3_4
+          subs:
+            - node: DungeonGenerationTest/EndRoom
+              transit: true

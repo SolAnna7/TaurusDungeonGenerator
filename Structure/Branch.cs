@@ -10,8 +10,8 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
     public class BranchDataWrapper
     {
         public List<string> BranchPrototypeNames { get; }
-        public int? BranchCount { get; }
-        public float? BranchPercentage { get; }
+        public int? BranchCount { get; set; }
+        public float? BranchPercentage { get; set; }
 
         public BranchDataWrapper(List<string> branchPrototypeNames, int branchCount)
         {
