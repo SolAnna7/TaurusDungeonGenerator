@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.Component;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils;
 
@@ -12,6 +13,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
 
         public Room Room { get; set; }
 
+        [Obsolete]
         public ISet<Tag> Tags { get; } = new HashSet<Tag>();
 
         public StructureMetaData StructureMetaData { get; set; }

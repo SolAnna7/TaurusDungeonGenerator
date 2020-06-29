@@ -76,6 +76,9 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
 
             TryCreateDungeonStructure(firstRoomWrapper);
 
+            firstRoomWrapper.ActualGraphElement.Tags.Add(new Tag("ROOT"));
+            firstRoomWrapper.ActualGraphElement.TraverseTopToDown().ForEach(n => n.Tags.Add(new Tag("MAIN")));
+
             CreateBranches(firstRoomWrapper);
 
             CloseOpenConnections(firstRoomWrapper);
@@ -148,7 +151,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
 
                 var remainingOptionalsToDisable = maxTransitNum - (requiredTransitNum - minTransitNum);
 
-                //todo: ez az algoritmus több szintű optional-ok használatakor nem helyes, mert csak a felső szintet veszi figyelembe
+                //todo: this algorithm will not work with multiple level options, only top level
                 var topLevelOptionalNodes = _loadedStructure.StructureMetaData.ChildOptionalNodes.ToList().OrderByDescending(x => x.StructureMetaData.SubTransitNum).ToList();
 
                 foreach (var optionalNode in topLevelOptionalNodes)
@@ -323,7 +326,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
 
                 if (availableConnections.Count < connectionsToMake)
                 {
-                    // már nem lehet sikeres az építés
+                    // building cannot be succesful
                     Debug.LogWarning($"Room {room.RoomResource} is failed");
                     RecursiveRemoveRoomAndChildren(room);
                     room.ParentRoomConnection?.ClearChild();
@@ -384,9 +387,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                     var nextRoomConnectionTransform = nextRoomConnection.transform;
                     var selectedConnectionTransform = selectedConnection.ParentConnection.transform;
 
-                    Vector3 newRoomPosition;
-                    Quaternion rotationDiff;
-                    GetNewRoomPosAndRot(room.GlobalPosition, room.Rotation, selectedConnectionTransform, nextRoomConnectionTransform, out newRoomPosition, out rotationDiff);
+                    GetNewRoomPosAndRot(room.GlobalPosition, room.Rotation, selectedConnectionTransform, nextRoomConnectionTransform, out var newRoomPosition, out var rotationDiff);
 
                     var nextRoomWrapper = new RoomPrototype(
                         nextElement,
