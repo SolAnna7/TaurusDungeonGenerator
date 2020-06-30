@@ -164,7 +164,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
 
                 var connection = openConnections.Pop();
 
-                if (TryAddRoomToConnection(connection, concretizedDungeonBranch))
+                if (GetPossibleRoomsForConnection(connection, concretizedDungeonBranch).Any(BuildPrototypeRoomRecur))
                 {
                     remainingBranchNum--;
                     connection.ParentRoomPrototype.ActualGraphElement.AddSubElement(concretizedDungeonBranch);
@@ -325,12 +325,30 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                     .ToList()
                     .Shuffle(_random);
 
-                DungeonNode nextElement = subElements[connectionsToMake - 1];
-                RoomPrototypeConnection successfulConnection;
-                if (availableConnections.Count < connectionsToMake ||
-                    (successfulConnection = availableConnections.FirstOrDefault(selectedConnection => TryAddRoomToConnection(selectedConnection, nextElement))) == null)
+                DungeonNode nextStructureElement = subElements[connectionsToMake - 1];
+
+                bool failed = availableConnections.Count < connectionsToMake;
+                RoomPrototypeConnection successfulConnection = null;
+                if (!failed)
                 {
-                    // building cannot be succesful
+                    foreach (var selectedConnection in availableConnections)
+                    {
+                        if (GetPossibleRoomsForConnection(selectedConnection, nextStructureElement).Any(BuildPrototypeRoomRecur))
+                        {
+                            successfulConnection = selectedConnection;
+                            break;
+                        }
+                    }
+
+                    if (successfulConnection == null)
+                    {
+                        failed = true;
+                    }
+                }
+
+                // building cannot be succesful
+                if (failed)
+                {
 #if TAURUS_DEBUG_LOG
                     Debug.LogWarning($"Failed to make connection {nextElement}[{nextElement.Style}] in room {room.RoomResource} is failed");
 #endif
@@ -344,7 +362,6 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                     availableConnections.Remove(successfulConnection);
                 }
             }
-
             return true;
         }
 
@@ -358,7 +375,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
         }
 
 
-        private bool TryAddRoomToConnection(RoomPrototypeConnection baseConnection, DungeonNode nextStructureElement)
+        private IEnumerable<RoomPrototype> GetPossibleRoomsForConnection(RoomPrototypeConnection baseConnection, DungeonNode nextStructureElement)
         {
             var baseRoom = baseConnection.ParentRoomPrototype;
 
@@ -385,14 +402,9 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
 
                     nextRoomWrapper.ConnectToParent(nextRoomConnection, baseConnection);
 
-                    if (!BuildPrototypeRoomRecur(nextRoomWrapper)) continue;
-
-                    // availableConnections.Remove(baseConnection);
-                    return true;
+                    yield return nextRoomWrapper;
                 }
             }
-
-            return false;
         }
 
         private static void GetNewRoomPosAndRot(
