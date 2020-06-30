@@ -1,5 +1,5 @@
 #if true
-//#define DEBUG_LOG
+//#define TAURUS_DEBUG_LOG
 #endif
 
 using System;
@@ -86,48 +86,9 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             return new PrototypeDungeon(firstRoomWrapper, _loadedStructure);
         }
 
-        private void CreateBranches(RoomPrototype firstRoomWrapper)
+        private void InitVirtualSpace()
         {
-            var branchDataWrapper = _loadedStructure.StructureMetaData.BranchDataWrapper;
-
-            if (branchDataWrapper == null)
-                return;
-
-            var branchPrototypeNames = branchDataWrapper.BranchPrototypeNames;
-            var openConnections = new Stack<RoomPrototypeConnection>(CollectOpenConnections(firstRoomWrapper).Shuffle(_random));
-
-            int remainingBranchNum;
-
-            if (branchDataWrapper.BranchCount.HasValue)
-            {
-                remainingBranchNum = branchDataWrapper.BranchCount.Value;
-            }
-            else if (branchDataWrapper.BranchPercentage.HasValue)
-            {
-                remainingBranchNum = (int) (branchDataWrapper.BranchPercentage.Value * openConnections.Count / 100);
-            }
-            else return;
-
-            int extremeCntr = 100;
-
-            while (openConnections.Count > 0 && remainingBranchNum > 0 && extremeCntr > 0)
-            {
-                var selectedBranchType = branchPrototypeNames.AnyRandom(_random);
-                AbstractDungeonStructure embeddedBranchDungeon = _loadedStructure.AbstractStructure.EmbeddedDungeons[selectedBranchType];
-                DungeonNode concretizedDungeonBranch = DungeonStructureConcretizer.ConcretizeDungeonTree(embeddedBranchDungeon.StartElement, _random,
-                    new ReadOnlyDictionary<string, AbstractDungeonStructure>(_loadedStructure.AbstractStructure.EmbeddedDungeons));
-
-                var connection = openConnections.Pop();
-
-                if (TryAddRoomToConnection(connection.ParentRoomPrototype, concretizedDungeonBranch, connection, new List<RoomPrototypeConnection>()))
-                {
-                    remainingBranchNum--;
-                    connection.ParentRoomPrototype.ActualGraphElement.AddSubElement(concretizedDungeonBranch);
-                    concretizedDungeonBranch.TraverseTopToDown().ForEach(n => n.Tags.Add(new Tag("BRANCH")));
-                }
-
-                extremeCntr--;
-            }
+            _virtualSpace = new BoundsOctree<RoomPrototype>(15, Vector3.zero, 1, 1.25f);
         }
 
         private void ParameterizeDungeon()
@@ -170,9 +131,48 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             }
         }
 
-        private void InitVirtualSpace()
+        private void CreateBranches(RoomPrototype firstRoomWrapper)
         {
-            _virtualSpace = new BoundsOctree<RoomPrototype>(15, Vector3.zero, 1, 1.25f);
+            var branchDataWrapper = _loadedStructure.StructureMetaData.BranchDataWrapper;
+
+            if (branchDataWrapper == null)
+                return;
+
+            var branchPrototypeNames = branchDataWrapper.BranchPrototypeNames;
+            var openConnections = new Stack<RoomPrototypeConnection>(CollectOpenConnections(firstRoomWrapper).Shuffle(_random));
+
+            int remainingBranchNum;
+
+            if (branchDataWrapper.BranchCount.HasValue)
+            {
+                remainingBranchNum = branchDataWrapper.BranchCount.Value;
+            }
+            else if (branchDataWrapper.BranchPercentage.HasValue)
+            {
+                remainingBranchNum = (int) (branchDataWrapper.BranchPercentage.Value * openConnections.Count / 100);
+            }
+            else return;
+
+            int extremeCntr = 100;
+
+            while (openConnections.Count > 0 && remainingBranchNum > 0 && extremeCntr > 0)
+            {
+                var selectedBranchType = branchPrototypeNames.AnyRandom(_random);
+                AbstractDungeonStructure embeddedBranchDungeon = _loadedStructure.AbstractStructure.EmbeddedDungeons[selectedBranchType];
+                DungeonNode concretizedDungeonBranch = DungeonStructureConcretizer.ConcretizeDungeonTree(embeddedBranchDungeon.StartElement, _random,
+                    new ReadOnlyDictionary<string, AbstractDungeonStructure>(_loadedStructure.AbstractStructure.EmbeddedDungeons));
+
+                var connection = openConnections.Pop();
+
+                if (TryAddRoomToConnection(connection, concretizedDungeonBranch))
+                {
+                    remainingBranchNum--;
+                    connection.ParentRoomPrototype.ActualGraphElement.AddSubElement(concretizedDungeonBranch);
+                    concretizedDungeonBranch.TraverseTopToDown().ForEach(n => n.Tags.Add(new Tag("BRANCH")));
+                }
+
+                extremeCntr--;
+            }
         }
 
         private void TryCreateDungeonStructure(RoomPrototype firstRoomWrapper)
@@ -195,12 +195,12 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                 if (i == 0)
                     break;
 
-                firstRoomWrapper.ChildRoomConnections.Where(x => x.ChildRoomPrototype != null).ForEach(x =>
+                firstRoomWrapper.ChildRoomConnections.Where(x => x.ChildRoomPrototype != null).ForEach(connectionToRemove =>
                 {
-                    RecursiveRemoveRoomAndChildren(x.ChildRoomPrototype);
-                    x.ClearChild();
+                    RemoveRoomAndChildrenRecur(connectionToRemove.ChildRoomPrototype);
+                    connectionToRemove.ClearChild();
                 });
-                _seed = _seed + 37 * (1 + _seed);
+                _seed += 37 * (1 + _seed);
                 _random = new Random(_seed);
                 _stepsMade = 0;
                 Debug.Log($"Retrying with seed {_seed}");
@@ -309,103 +309,85 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
 
         private bool BuildPrototypeRoomRecur(RoomPrototype room)
         {
-#if DEBUG_LOG
+#if TAURUS_DEBUG_LOG
             Debug.Log($"Room {room.RoomResource} is built");
 #endif
-
             DungeonNode actualGraphElement = room.ActualGraphElement;
 
             if (actualGraphElement.IsEndNode)
                 return true;
 
-            var subElements = actualGraphElement.SubElements.Where(s => s.StructureMetaData.OptionalNodeData == null || s.StructureMetaData.OptionalNodeData.Required).ToList();
+            var subElements = actualGraphElement.SubElements.Where(sub => sub.StructureMetaData.OptionalNodeData?.Required ?? true).ToList();
             for (int connectionsToMake = subElements.Count; connectionsToMake > 0; connectionsToMake--)
             {
-                List<RoomPrototypeConnection> availableConnections = room.ChildRoomConnections.Where(x => x.State == ConnectionState.FREE).ToList();
-                availableConnections.Shuffle(_random);
-
-                if (availableConnections.Count < connectionsToMake)
-                {
-                    // building cannot be succesful
-                    Debug.LogWarning($"Room {room.RoomResource} is failed");
-                    RecursiveRemoveRoomAndChildren(room);
-                    room.ParentRoomConnection?.ClearChild();
-                    return RoomCreationFailed();
-                }
+                IList<RoomPrototypeConnection> availableConnections = room.ChildRoomConnections
+                    .Where(x => x.State == ConnectionState.FREE)
+                    .ToList()
+                    .Shuffle(_random);
 
                 DungeonNode nextElement = subElements[connectionsToMake - 1];
-
-                bool connectionMade = false;
-
-                foreach (var selectedConnection in availableConnections)
+                RoomPrototypeConnection successfulConnection;
+                if (availableConnections.Count < connectionsToMake ||
+                    (successfulConnection = availableConnections.FirstOrDefault(selectedConnection => TryAddRoomToConnection(selectedConnection, nextElement))) == null)
                 {
-                    if (TryAddRoomToConnection(room, nextElement, selectedConnection, availableConnections))
-                    {
-                        connectionMade = true;
-                        break;
-                    }
-                }
-
-                if (!connectionMade)
-                {
-#if DEBUG_LOG
+                    // building cannot be succesful
+#if TAURUS_DEBUG_LOG
                     Debug.LogWarning($"Failed to make connection {nextElement}[{nextElement.Style}] in room {room.RoomResource} is failed");
 #endif
-                    RecursiveRemoveRoomAndChildren(room);
+                    RemoveRoomAndChildrenRecur(room);
                     room.ParentRoomConnection?.ClearChild();
-                    return RoomCreationFailed();
+                    RoomCreationFailed();
+                    return false;
+                }
+                else
+                {
+                    availableConnections.Remove(successfulConnection);
                 }
             }
 
             return true;
         }
 
-        private bool RoomCreationFailed()
+        private void RoomCreationFailed()
         {
             _stepsMade++;
             if (_stepsMade > maxSteps)
             {
                 throw new MaxStepsReachedException(_stepsMade);
             }
-
-            return false;
         }
 
 
-        private bool TryAddRoomToConnection(RoomPrototype room, DungeonNode nextElement, RoomPrototypeConnection selectedConnection, List<RoomPrototypeConnection> availableConnections)
+        private bool TryAddRoomToConnection(RoomPrototypeConnection baseConnection, DungeonNode nextStructureElement)
         {
-            var possibleRooms = GetRandomRooms(nextElement);
+            var baseRoom = baseConnection.ParentRoomPrototype;
 
-            foreach (var selectedRoom in possibleRooms)
+            foreach (var newRoom in GetRandomOrderedRooms(nextStructureElement))
             {
-                IEnumerable<RoomConnector> possibleNextConnections = selectedRoom
+                IEnumerable<RoomConnector> possibleNextConnections = newRoom
                     .GetConnections()
-                    .Where(x => x.size.Equals(selectedConnection.ParentConnection.size) && x.type == selectedConnection.ParentConnection.type).ToList();
+                    .Where(x => x.size.Equals(baseConnection.ParentConnection.size) && x.type == baseConnection.ParentConnection.type)
+                    .ToList().Shuffle(_random);
 
                 foreach (var nextRoomConnection in possibleNextConnections)
                 {
                     var nextRoomConnectionTransform = nextRoomConnection.transform;
-                    var selectedConnectionTransform = selectedConnection.ParentConnection.transform;
+                    var selectedConnectionTransform = baseConnection.ParentConnection.transform;
 
-                    GetNewRoomPosAndRot(room.GlobalPosition, room.Rotation, selectedConnectionTransform, nextRoomConnectionTransform, out var newRoomPosition, out var rotationDiff);
+                    GetNewRoomPosAndRot(baseRoom.GlobalPosition, baseRoom.Rotation, selectedConnectionTransform, nextRoomConnectionTransform, out var newRoomPosition, out var rotationDiff);
 
-                    var nextRoomWrapper = new RoomPrototype(
-                        nextElement,
-                        selectedRoom,
-                        newRoomPosition,
-                        rotationDiff
-                    );
+                    var nextRoomWrapper = new RoomPrototype(nextStructureElement, newRoom, newRoomPosition, rotationDiff);
 
-                    if (!TryAddRoomToVirtualSpace(nextRoomWrapper, room))
+                    if (!TryAddRoomToVirtualSpace(nextRoomWrapper, baseRoom))
                     {
                         continue;
                     }
 
-                    nextRoomWrapper.ConnectToParent(nextRoomConnection, selectedConnection);
+                    nextRoomWrapper.ConnectToParent(nextRoomConnection, baseConnection);
 
                     if (!BuildPrototypeRoomRecur(nextRoomWrapper)) continue;
 
-                    availableConnections.Remove(selectedConnection);
+                    // availableConnections.Remove(baseConnection);
                     return true;
                 }
             }
@@ -453,12 +435,12 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
         }
 
 
-        private void RecursiveRemoveRoomAndChildren(RoomPrototype roomToDelete)
+        private void RemoveRoomAndChildrenRecur(RoomPrototype roomToDelete)
         {
             _virtualSpace.Remove(roomToDelete);
             foreach (var childRoom in roomToDelete.ChildRoomConnections.Where(x => x.ChildRoomPrototype != null).Select(x => x.ChildRoomPrototype))
             {
-                RecursiveRemoveRoomAndChildren(childRoom);
+                RemoveRoomAndChildrenRecur(childRoom);
             }
 #if DEBUG_LOG
             Debug.LogWarning($"Removed room {roomToDelete.RoomResource.name}");
@@ -489,12 +471,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             return roomCollection.rooms[_random.Next(roomCollection.rooms.Count)];
         }
 
-        private List<Room> GetRandomRooms(DungeonNode element)
-        {
-            var rooms = _loadedRooms[element.Style].rooms.ToList();
-            rooms.Shuffle(_random);
-            return rooms;
-        }
+        private IEnumerable<Room> GetRandomOrderedRooms(DungeonNode element) => _loadedRooms[element.Style].rooms.ToList().Shuffle(_random);
 
         void CloseOpenConnections(RoomPrototype roomPrototype)
         {
