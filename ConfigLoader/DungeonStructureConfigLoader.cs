@@ -10,7 +10,7 @@ using SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils;
 
 namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
 {
-    public static class DungeonStructureConfigManager
+    public static class DungeonStructureConfigLoader
     {
         public static AbstractDungeonStructure BuildFromConfig(ConfigPath relativeDungeonPath)
         {
@@ -154,23 +154,22 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
             return element;
         }
 
-        private static void ReadAndAddTags(ConfigNode config, AbstractDungeonElement element)
+        private static void ReadAndAddTags(ConfigNode config, ITagHolder element)
         {
-            element.AddTags(ReadTags(config));
+            ReadTags(config).ForEach(element.AddTag);
         }
 
-        private static IEnumerable<Tag> ReadTags(ConfigNode config)
+        private static IEnumerable<string> ReadTags(ConfigNode config)
         {
-            IEnumerable<Tag> tags = new List<Tag>();
-            config.TryQuery("tags").IfPresent(tagsNode => { tags = tagsNode.AsNodeList().Select(tag => new Tag(tag.AsString())); });
+            IEnumerable<string> tags = new HashSet<string>();
+            config.TryQuery("tags").IfPresent(tagsNode => { tags = tagsNode.AsNodeList().Select(tagNode =>tagNode.AsString()); });
             return tags;
         }
 
-        private static void AddParentTagsRecursive(AbstractDungeonElement element, IEnumerable<Tag> tags)
+        private static void AddParentTagsRecursive(AbstractDungeonElement element, IEnumerable<string> tags)
         {
             element.SubElements.ForEach(s => AddParentTagsRecursive(s, tags));
-
-            element.AddTags(tags);
+            tags.ForEach(element.AddTag);
         }
     }
 }

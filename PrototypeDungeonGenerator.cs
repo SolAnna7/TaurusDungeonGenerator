@@ -76,8 +76,8 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
 
             TryCreateDungeonStructure(firstRoomWrapper);
 
-            firstRoomWrapper.ActualGraphElement.Tags.Add(new Tag("ROOT"));
-            firstRoomWrapper.ActualGraphElement.TraverseTopToDown().ForEach(n => n.Tags.Add(new Tag("MAIN")));
+            firstRoomWrapper.ActualGraphElement.AddTag("ROOT");
+            firstRoomWrapper.ActualGraphElement.TraverseTopToDown().ForEach(n => n.AddTag("MAIN"));
 
             CreateBranches(firstRoomWrapper);
 
@@ -168,7 +168,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                 {
                     remainingBranchNum--;
                     connection.ParentRoomPrototype.ActualGraphElement.AddSubElement(concretizedDungeonBranch);
-                    concretizedDungeonBranch.TraverseTopToDown().ForEach(n => n.Tags.Add(new Tag("BRANCH")));
+                    concretizedDungeonBranch.TraverseTopToDown().ForEach(n => n.AddTag("BRANCH"));
                 }
 
                 extremeCntr--;
@@ -362,6 +362,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                     availableConnections.Remove(successfulConnection);
                 }
             }
+
             return true;
         }
 

@@ -40,48 +40,61 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
     }
 
 
-    public abstract class AbstractDungeonElement
+    public abstract class AbstractDungeonElement : ITagHolder, IPropertyHolder
     {
+        public string Style { get; protected set; }
+
         public List<AbstractDungeonElement> SubElements
         {
             get { return subElements; }
         }
 
         protected List<AbstractDungeonElement> subElements = new List<AbstractDungeonElement>();
-
-        public List<Tag> Tags { get; } = new List<Tag>();
+        private readonly PropertyAndTagHolder _tagAndPropertyHolder = new PropertyAndTagHolder();
+        public PropertyAndTagHolder TagAndPropertyHolder => _tagAndPropertyHolder;
 
         public bool IsOptional { get; set; } = false;
         public bool IsTansit { get; set; } = false;
-
-        public void AddTags(IEnumerable<Tag> tags) => Tags.AddRange(tags);
 
         protected AbstractDungeonElement()
         {
         }
 
-        public void AddSubElement(AbstractDungeonElement newSub)
-        {
-            subElements.Add(newSub);
-        }
-    }
+        protected AbstractDungeonElement(string style) => Style = style;
 
-    public abstract class AbstractStyledDungeonElement : AbstractDungeonElement
-    {
-        public string Style { get; protected set; }
-
-        protected AbstractStyledDungeonElement(string style)
-        {
-            Style = style;
-        }
-
-        protected AbstractStyledDungeonElement(string style, params AbstractDungeonElement[] subElements) : this(style)
+        protected AbstractDungeonElement(string style, params AbstractDungeonElement[] subElements) : this(style)
         {
             this.subElements = new List<AbstractDungeonElement>(subElements);
         }
+
+        public void AddSubElement(AbstractDungeonElement newSub) => subElements.Add(newSub);
+
+        #region Tag and property accessors
+
+        public object GetProperty(string key) => _tagAndPropertyHolder.GetProperty(key);
+
+        public T GetPropertyAs<T>(string key) => _tagAndPropertyHolder.GetPropertyAs<T>(key);
+
+        public bool HasProperty(string key) => _tagAndPropertyHolder.HasProperty(key);
+
+        public IEnumerable<Tuple<string, object>> GetProperties() => _tagAndPropertyHolder.GetProperties();
+
+        public void AddProperty<T>(string key, T value) => _tagAndPropertyHolder.AddProperty(key, value);
+
+        public void RemoveProperty(string key) => _tagAndPropertyHolder.RemoveProperty(key);
+        public bool HasTag(string tag) => _tagAndPropertyHolder.HasTag(tag);
+
+        public IEnumerable<string> GetTags() => _tagAndPropertyHolder.GetTags();
+
+        public void AddTag(string tag) => _tagAndPropertyHolder.AddTag(tag);
+
+        public void RemoveTag(string tag) => _tagAndPropertyHolder.RemoveTag(tag);
+
+        #endregion
     }
 
-    public class ConnectionElement : AbstractStyledDungeonElement
+
+    public class ConnectionElement : AbstractDungeonElement
     {
         public ConnectionElement(string style, RangeI length, params AbstractDungeonElement[] subElements) : base(style, subElements)
         {
@@ -93,7 +106,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         public RangeI Length { get; private set; }
     }
 
-    public class NodeElement : AbstractStyledDungeonElement
+    public class NodeElement : AbstractDungeonElement
     {
         public NodeElement(string style) : base(style)
         {

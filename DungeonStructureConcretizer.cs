@@ -25,11 +25,11 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                 {
                     DungeonNode copyNode;
                     if (node.IsEndNode)
-                        copyNode = new DungeonNode(node.Style, node.Tags);
+                        copyNode = new DungeonNode(node.Style, node.TagAndPropertyHolder);
                     else
                     {
                         List<DungeonNode> subElements = node.SubElements.Select(element => ConcretizeDungeonTree(element, random, embeddedDungeons)).ToList();
-                        copyNode = new DungeonNode(node.Style, node.Tags, subElements);
+                        copyNode = new DungeonNode(node.Style, node.TagAndPropertyHolder, subElements);
                     }
 
                     if (node.IsOptional)
@@ -55,8 +55,8 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                     for (int i = 0; i < connectionLength; i++)
                     {
                         replacementNode = replacementNode != null
-                            ? new DungeonNode(connection.Style, connection.Tags, new List<DungeonNode> {replacementNode})
-                            : new DungeonNode(connection.Style, connection.Tags);
+                            ? new DungeonNode(connection.Style, connection.TagAndPropertyHolder, new List<DungeonNode> {replacementNode})
+                            : new DungeonNode(connection.Style, connection.TagAndPropertyHolder);
                     }
 
                     if (replacementNode == null)

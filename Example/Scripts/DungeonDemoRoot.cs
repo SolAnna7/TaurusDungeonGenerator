@@ -42,7 +42,7 @@ namespace TaurusDungeonGenerator.Example.Scripts
             GameConfig.InitConfig();
 
             GameConfig.Query("dungeons").AsNode().GetKeys().ForEach(
-                k => result.Add(k, DungeonStructureConfigManager.BuildFromConfig(new ConfigPath(k))));
+                k => result.Add(k, DungeonStructureConfigLoader.BuildFromConfig(new ConfigPath(k))));
             return result;
 #else
             return null;

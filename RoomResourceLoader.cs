@@ -23,12 +23,12 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             if (dungeonStructure.StructureMetaData.BranchDataWrapper != null)
                 foreach (var prototypeName in dungeonStructure.StructureMetaData.BranchDataWrapper.BranchPrototypeNames)
                 {
-                    LoadRoomPrototypesRecur((AbstractStyledDungeonElement) dungeonStructure.AbstractStructure.EmbeddedDungeons[prototypeName].StartElement, collector);
+                    LoadRoomPrototypesRecur(dungeonStructure.AbstractStructure.EmbeddedDungeons[prototypeName].StartElement, collector);
                 }
 
             return collector;
         }
-        
+
         private static void LoadRoomPrototypesRecur(DungeonNode styledElement, IDictionary<string, RoomCollection> collector)
         {
             var style = styledElement.Style;
@@ -37,12 +37,12 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             styledElement.SubElements.ForEach(x => LoadRoomPrototypesRecur(x, collector));
         }
 
-        private static void LoadRoomPrototypesRecur(AbstractStyledDungeonElement styledElement, IDictionary<string, RoomCollection> collector)
+        private static void LoadRoomPrototypesRecur(AbstractDungeonElement styledElement, IDictionary<string, RoomCollection> collector)
         {
             var style = styledElement.Style;
             if (!collector.ContainsKey(style))
                 collector.Add(style, LoadRoom(style));
-            styledElement.SubElements.ForEach(x => LoadRoomPrototypesRecur((AbstractStyledDungeonElement) x, collector));
+            styledElement.SubElements.ForEach(element => LoadRoomPrototypesRecur(element, collector));
         }
 
         private static RoomCollection LoadRoom(string style)

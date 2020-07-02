@@ -21,10 +21,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils
 
         public static void GenerateDungeonDebugStructure(DungeonStructure structure, Transform parent)
         {
-            structure.StartElement.ForeachTopDownDepth((n, d) =>
-            {
-                BuildDebugCube(parent, n, ElementColorBasedOnPath(n, d));
-            });
+            structure.StartElement.ForeachTopDownDepth((n, d) => { BuildDebugCube(parent, n, ElementColorBasedOnPath(n, d)); });
         }
 
         private static void BuildDebugCube(Transform parent, DungeonNode n, Color color)
@@ -44,7 +41,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils
 
         private static Color ElementColorBasedOnPath(DungeonNode node, int depth)
         {
-            bool isBranch = node.Tags.Contains(new Tag("BRANCH"));
+            bool isBranch = node.GetTags().Contains("BRANCH");
             bool isTransit = node.StructureMetaData.IsTransit;
             bool isStart = depth == 0;
 
@@ -77,14 +74,14 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils
         private static string GetSummaryTextForRoom(Room room)
         {
             var roomDungeonStructureNode = room.DungeonStructureNode;
-            var tags = room.DungeonStructureNode.Tags;
+            var tags = room.DungeonStructureNode.GetTags().ToList();
 
             StringBuilder sb = new StringBuilder();
             sb.Append(roomDungeonStructureNode.Style);
             if (tags.Count > 0)
             {
                 sb.Append("\nTags:\n - ");
-                sb.Append(String.Join("\n - ", tags.Select(tag => tag.Value)));
+                sb.Append(String.Join("\n - ", tags));
             }
 
             return sb.ToString();

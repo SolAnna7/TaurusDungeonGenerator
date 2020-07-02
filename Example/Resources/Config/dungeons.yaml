@@ -6,6 +6,10 @@
       length: 1_2
       subs:
         - node: DungeonGenerationTest/MiddleRoom
+          tags:
+            - aaa
+            - xxx
+              
 
   graph-test:
     start-node:
