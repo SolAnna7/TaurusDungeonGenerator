@@ -64,7 +64,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Tests
                         new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty())),
                     new ConnectionElement("DungeonGenerationTest/Corridors", NodeMetaData.Empty(), new RangeI(3, 4),
                         new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty()))
-                ));
+                ), StructureMetaData.Empty());
             structure.ValidateStructure();
             var generator = new PrototypeDungeonGenerator(structure, seed);
             generator.BuildPrototype();

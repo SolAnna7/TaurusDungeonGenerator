@@ -12,7 +12,9 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
         public static DungeonStructure ConcretizeStructure(AbstractDungeonStructure inputStructure, Random random)
         {
             var structure = new DungeonStructure(ConcretizeDungeonTree(inputStructure.StartElement, random,
-                new ReadOnlyDictionary<string, AbstractDungeonStructure>(inputStructure.EmbeddedDungeons)), inputStructure);
+                new ReadOnlyDictionary<string, AbstractDungeonStructure>(inputStructure.EmbeddedDungeons)),
+                inputStructure.StructureMetaData,
+                inputStructure);
             structure.NodeMetaData.BranchDataWrapper = inputStructure.BranchDataWrapper;
             return structure;
         }

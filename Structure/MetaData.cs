@@ -9,13 +9,11 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
     public class NodeMetaData : IBranchDataHolder, ITagHolder, IPropertyHolder, ICloneable
     {
         public BranchDataWrapper BranchDataWrapper { get; set; }
-        
-        [Obsolete]
-        public bool IsTransit { get; set; } = false;
-        
+
+        [Obsolete] public bool IsTransit { get; set; } = false;
+
         //includes this node if it is a transit
-        [Obsolete]
-        public int SubTransitNum { get; set; } = 0;
+        [Obsolete] public int SubTransitNum { get; set; } = 0;
         public List<DungeonNode> ChildOptionalNodes { get; set; } = new List<DungeonNode>();
 
         public OptionalNodeData OptionalNodeData = null;
@@ -83,6 +81,55 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         public object Clone()
         {
             return MemberwiseClone();
+        }
+    }
+
+    public class StructureMetaData : ITagHolder, IPropertyHolder, ICloneable
+    {
+        public float MarginUnit { get; set; }
+
+        public StructureMetaData(
+            float marginUnit = 0,
+            PropertyAndTagHolder structurePropertyAndTagHolder = null,
+            PropertyAndTagHolder globalNodePropertyAndTagHolder = null)
+        {
+            MarginUnit = marginUnit;
+            StructurePropertyAndTagHolder = structurePropertyAndTagHolder ?? new PropertyAndTagHolder();
+            GlobalNodePropertyAndTagHolder = globalNodePropertyAndTagHolder ?? new PropertyAndTagHolder();
+        }
+
+        public static StructureMetaData Empty() => new StructureMetaData();
+
+        #region Tag and property data
+
+        public PropertyAndTagHolder StructurePropertyAndTagHolder { get; }
+
+        public PropertyAndTagHolder GlobalNodePropertyAndTagHolder { get; }
+
+        public object GetProperty(string key) => StructurePropertyAndTagHolder.GetProperty(key);
+
+        public T GetPropertyAs<T>(string key) => StructurePropertyAndTagHolder.GetPropertyAs<T>(key);
+
+        public bool HasProperty(string key) => StructurePropertyAndTagHolder.HasProperty(key);
+        public IEnumerable<Tuple<string, object>> GetProperties() => StructurePropertyAndTagHolder.GetProperties();
+
+        public void AddProperty<T>(string key, T value) => StructurePropertyAndTagHolder.AddProperty(key, value);
+
+        public void RemoveProperty(string key) => StructurePropertyAndTagHolder.RemoveProperty(key);
+
+        public bool HasTag(string tag) => StructurePropertyAndTagHolder.HasTag(tag);
+
+        public IEnumerable<string> GetTags() => StructurePropertyAndTagHolder.GetTags();
+
+        public void AddTag(string tag) => StructurePropertyAndTagHolder.AddTag(tag);
+
+        public void RemoveTag(string tag) => StructurePropertyAndTagHolder.RemoveTag(tag);
+
+        #endregion
+
+        public object Clone()
+        {
+            return new StructureMetaData(MarginUnit, (PropertyAndTagHolder) StructurePropertyAndTagHolder.Clone(), (PropertyAndTagHolder) GlobalNodePropertyAndTagHolder.Clone());
         }
     }
 }

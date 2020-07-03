@@ -17,13 +17,13 @@ namespace TaurusDungeonGenerator.Example.Scripts
                     "b1",
                     new AbstractDungeonStructure(
                         new ConnectionElement("DungeonGenerationTest/Corridors", NodeMetaData.Empty(), new RangeI(1, 5),
-                            new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty())))
+                            new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty())), StructureMetaData.Empty())
                 },
                 {
                     "b2",
                     new AbstractDungeonStructure(
                         new ConnectionElement("DungeonGenerationTest/Corridors", NodeMetaData.Empty(), new RangeI(3, 7),
-                            new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty())))
+                            new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty())), StructureMetaData.Empty())
                 }
             };
 
@@ -41,7 +41,7 @@ namespace TaurusDungeonGenerator.Example.Scripts
                                 new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty())),
                             new ConnectionElement("DungeonGenerationTest/Corridors", NodeMetaData.Empty(), new RangeI(3, 4),
                                 new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty()))
-                        ))
+                        ), StructureMetaData.Empty())
                 },
                 {
                     "002",
@@ -51,7 +51,7 @@ namespace TaurusDungeonGenerator.Example.Scripts
                                 new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty())),
                             new ConnectionElement("DungeonGenerationTest/Corridors", NodeMetaData.Empty(), new RangeI(3, 4),
                                 new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty()))
-                        ))
+                        ), StructureMetaData.Empty())
                 }
             };
 

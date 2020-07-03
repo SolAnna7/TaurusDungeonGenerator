@@ -56,6 +56,9 @@
                                     - node: DungeonGenerationTest/EndRoom
 
   graph-test-2:
+    global-node-tags:
+      - aaa123
+      - bbb987
     inline-nested:
       branch-test:
         start-node:

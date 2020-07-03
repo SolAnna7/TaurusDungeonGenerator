@@ -13,10 +13,13 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         public Dictionary<string, AbstractDungeonStructure> EmbeddedDungeons { get; set; } = new Dictionary<string, AbstractDungeonStructure>();
 
         public BranchDataWrapper BranchDataWrapper { get; set; }
+        
+        public StructureMetaData StructureMetaData { get; }
 
-        public AbstractDungeonStructure(AbstractDungeonElement startElement)
+        public AbstractDungeonStructure(AbstractDungeonElement startElement, StructureMetaData structureMetaData)
         {
             StartElement = startElement;
+            StructureMetaData = structureMetaData;
         }
 
         public void ValidateStructure()

@@ -24,13 +24,9 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
             ISet<String> nestedDungeonNameCollector = new HashSet<string>();
             var firstElement = ReadElement(dungeonStructureBaseNode.Query("start-node").AsNode(), nestedDungeonNameCollector);
 
-            var dungeonTags = ReadTags(dungeonStructureBaseNode);
-
             BranchDataWrapper branchData = ReadBranchData(dungeonStructureBaseNode);
             if (branchData != null)
                 nestedDungeonNameCollector.UnionWith(branchData.BranchPrototypeNames);
-
-            AddParentTagsRecursive(firstElement, dungeonTags);
 
             Dictionary<string, AbstractDungeonStructure> nestedDungeons = new Dictionary<string, AbstractDungeonStructure>();
 
@@ -53,9 +49,32 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
                 }
             }
 
-            var abstractDungeonStructure = new AbstractDungeonStructure(firstElement) {BranchDataWrapper = branchData, EmbeddedDungeons = nestedDungeons};
+            var structureMetaData = ReadStructureMetaData(dungeonStructureBaseNode);
+            AddParentTagsRecursive(firstElement, structureMetaData.GlobalNodePropertyAndTagHolder.GetTags());
+
+            var abstractDungeonStructure = new AbstractDungeonStructure(firstElement, structureMetaData)
+                {BranchDataWrapper = branchData, EmbeddedDungeons = nestedDungeons};
             abstractDungeonStructure.ValidateStructure();
             return abstractDungeonStructure;
+        }
+
+        private static StructureMetaData ReadStructureMetaData(ConfigNode dungeonStructureBaseNode)
+        {
+            var globalTags = new PropertyAndTagHolder();
+            dungeonStructureBaseNode
+                .TryQuery("global-node-tags")
+                .IfPresentGet(tagsNode => tagsNode.AsNodeList().Select(tagNode => tagNode.AsString()),
+                    new HashSet<string>()).ForEach(globalTags.AddTag);
+            
+            var structureTags = new PropertyAndTagHolder();
+            dungeonStructureBaseNode
+                .TryQuery("structure-tags")
+                .IfPresentGet(tagsNode => tagsNode.AsNodeList().Select(tagNode => tagNode.AsString()),
+                    new HashSet<string>()).ForEach(structureTags.AddTag);
+
+            float marginUnit = dungeonStructureBaseNode.TryQuery("margin-unit").IfPresentGet(x => x.AsFloat(), 0);
+
+            return new StructureMetaData(marginUnit,structureTags,globalTags);
         }
 
         private static BranchDataWrapper ReadBranchData(ConfigNode node)
