@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils;
 
 namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
 {
@@ -22,7 +23,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         void RemoveTag(string tag);
     }
 
-    public class PropertyAndTagHolder : IPropertyHolder, ITagHolder
+    public class PropertyAndTagHolder : IPropertyHolder, ITagHolder, ICloneable
     {
         private Dictionary<string, object> _properties = new Dictionary<string, object>();
         private ISet<string> _tags = new HashSet<string>();
@@ -46,6 +47,14 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         public void RemoveTag(string tag)
         {
             RemoveProperty(tag);
+        }
+
+        public object Clone()
+        {
+            var clone = new PropertyAndTagHolder();
+            GetTags().ForEach(clone.AddTag);
+            GetProperties().ForEach(p => clone.AddProperty(p.Item1, p.Item2));
+            return clone;
         }
     }
 }

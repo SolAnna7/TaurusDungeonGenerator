@@ -40,63 +40,41 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
     }
 
 
-    public abstract class AbstractDungeonElement : ITagHolder, IPropertyHolder
+    public abstract class AbstractDungeonElement
     {
-        public string Style { get; protected set; }
+        public string Style { get; }
 
-        public List<AbstractDungeonElement> SubElements
-        {
-            get { return subElements; }
-        }
+        public List<AbstractDungeonElement> SubElements => subElements;
 
         protected List<AbstractDungeonElement> subElements = new List<AbstractDungeonElement>();
-        private readonly PropertyAndTagHolder _tagAndPropertyHolder = new PropertyAndTagHolder();
-        public PropertyAndTagHolder TagAndPropertyHolder => _tagAndPropertyHolder;
+
+        public NodeMetaData ElementMetaData { get; set; }
 
         public bool IsOptional { get; set; } = false;
-        public bool IsTansit { get; set; } = false;
+        [Obsolete] public bool IsTansit { get; set; } = false;
 
         protected AbstractDungeonElement()
         {
         }
 
-        protected AbstractDungeonElement(string style) => Style = style;
+        protected AbstractDungeonElement(string style, NodeMetaData elementMetaData)
+        {
+            Style = style;
+            ElementMetaData = elementMetaData;
+        }
 
-        protected AbstractDungeonElement(string style, params AbstractDungeonElement[] subElements) : this(style)
+        protected AbstractDungeonElement(string style, NodeMetaData elementMetaData, params AbstractDungeonElement[] subElements) : this(style, elementMetaData)
         {
             this.subElements = new List<AbstractDungeonElement>(subElements);
         }
 
         public void AddSubElement(AbstractDungeonElement newSub) => subElements.Add(newSub);
-
-        #region Tag and property accessors
-
-        public object GetProperty(string key) => _tagAndPropertyHolder.GetProperty(key);
-
-        public T GetPropertyAs<T>(string key) => _tagAndPropertyHolder.GetPropertyAs<T>(key);
-
-        public bool HasProperty(string key) => _tagAndPropertyHolder.HasProperty(key);
-
-        public IEnumerable<Tuple<string, object>> GetProperties() => _tagAndPropertyHolder.GetProperties();
-
-        public void AddProperty<T>(string key, T value) => _tagAndPropertyHolder.AddProperty(key, value);
-
-        public void RemoveProperty(string key) => _tagAndPropertyHolder.RemoveProperty(key);
-        public bool HasTag(string tag) => _tagAndPropertyHolder.HasTag(tag);
-
-        public IEnumerable<string> GetTags() => _tagAndPropertyHolder.GetTags();
-
-        public void AddTag(string tag) => _tagAndPropertyHolder.AddTag(tag);
-
-        public void RemoveTag(string tag) => _tagAndPropertyHolder.RemoveTag(tag);
-
-        #endregion
     }
 
 
     public class ConnectionElement : AbstractDungeonElement
     {
-        public ConnectionElement(string style, RangeI length, params AbstractDungeonElement[] subElements) : base(style, subElements)
+        public ConnectionElement(string style, NodeMetaData elementMetaData, RangeI length, params AbstractDungeonElement[] subElements) : base(style, elementMetaData, subElements)
         {
             if (length.Min <= 0)
                 throw new Exception("Length must be 1 or greater");
@@ -108,11 +86,11 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
 
     public class NodeElement : AbstractDungeonElement
     {
-        public NodeElement(string style) : base(style)
+        public NodeElement(string style, NodeMetaData elementMetaData) : base(style, elementMetaData)
         {
         }
 
-        public NodeElement(string style, params AbstractDungeonElement[] subElements) : base(style, subElements)
+        public NodeElement(string style, NodeMetaData elementMetaData, params AbstractDungeonElement[] subElements) : base(style, elementMetaData, subElements)
         {
         }
 
@@ -126,15 +104,17 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
     {
         public string Path { get; private set; }
 
-        public NestedDungeon(string path)
+        public NestedDungeon(string path, NodeMetaData elementMetaData)
         {
             Path = path;
+            ElementMetaData = elementMetaData;
         }
 
-        public NestedDungeon(string path, params AbstractDungeonElement[] subElements)
+        public NestedDungeon(string path, NodeMetaData elementMetaData, params AbstractDungeonElement[] subElements)
         {
             Path = path;
             this.subElements = new List<AbstractDungeonElement>(subElements);
+            ElementMetaData = elementMetaData;
         }
     }
 }

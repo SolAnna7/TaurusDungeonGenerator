@@ -5,29 +5,21 @@ using SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils;
 
 namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
 {
-    public class DungeonNode : ITraversableTree<DungeonNode>, ITagHolder, IPropertyHolder
+    public class DungeonNode : ITraversableTree<DungeonNode>
     {
-        private readonly PropertyAndTagHolder _tagAndPropertyHolder = new PropertyAndTagHolder();
         public List<DungeonNode> SubElements { get; }
 
         public string Style { get; }
 
         public Room Room { get; set; }
 
-        public StructureMetaData StructureMetaData { get; set; }
+        public NodeMetaData MetaData { get; set; }
 
-        public DungeonNode(string style, PropertyAndTagHolder holder = null, List<DungeonNode> subElements = null)
+        public DungeonNode(string style, NodeMetaData metaData, List<DungeonNode> subElements = null)
         {
             SubElements = subElements ?? new List<DungeonNode>();
             Style = style;
-
-            StructureMetaData = new StructureMetaData();
-
-            if (holder != null)
-            {
-                holder.GetTags().ForEach(AddTag);
-                holder.GetProperties().ForEach(tuple => AddProperty(tuple.Item1, tuple.Item2));
-            }
+            MetaData = metaData;
         }
 
         public void AddSubElement(DungeonNode newSub) => SubElements.Add(newSub);
@@ -36,29 +28,5 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         public IEnumerable<ITraversableTree<DungeonNode>> Children => SubElements;
         public DungeonNode Node => this;
 
-        public PropertyAndTagHolder TagAndPropertyHolder => _tagAndPropertyHolder;
-
-        #region Tag and property accessors
-
-        public object GetProperty(string key) => TagAndPropertyHolder.GetProperty(key);
-
-        public T GetPropertyAs<T>(string key) => TagAndPropertyHolder.GetPropertyAs<T>(key);
-
-        public bool HasProperty(string key) => TagAndPropertyHolder.HasProperty(key);
-        public IEnumerable<Tuple<string, object>> GetProperties() => TagAndPropertyHolder.GetProperties();
-
-        public void AddProperty<T>(string key, T value) => TagAndPropertyHolder.AddProperty(key, value);
-
-        public void RemoveProperty(string key) => TagAndPropertyHolder.RemoveProperty(key);
-
-        public bool HasTag(string tag) => TagAndPropertyHolder.HasTag(tag);
-
-        public IEnumerable<string> GetTags() => TagAndPropertyHolder.GetTags();
-
-        public void AddTag(string tag) => TagAndPropertyHolder.AddTag(tag);
-
-        public void RemoveTag(string tag) => TagAndPropertyHolder.RemoveTag(tag);
-
-        #endregion
     }
 }

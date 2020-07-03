@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
 {
@@ -7,7 +8,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         BranchDataWrapper BranchDataWrapper { get; set; }
     }
 
-    public class BranchDataWrapper
+    public class BranchDataWrapper : ICloneable
     {
         public List<string> BranchPrototypeNames { get; }
         public int? BranchCount { get; set; }
@@ -23,6 +24,15 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         {
             BranchPrototypeNames = branchPrototypeNames;
             BranchPercentage = branchPercentage;
+        }
+
+        public object Clone()
+        {
+            if (BranchCount.HasValue)
+                return new BranchDataWrapper(BranchPrototypeNames, BranchCount.Value);
+            if (BranchPercentage.HasValue)
+                return new BranchDataWrapper(BranchPrototypeNames, BranchPercentage.Value);
+            throw new Exception("One value must be filled!");
         }
     }
 }

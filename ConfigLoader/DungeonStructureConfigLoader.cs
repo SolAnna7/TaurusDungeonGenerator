@@ -105,11 +105,9 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
                     var subElementsMaybe = config.TryQuery("subs");
 
                     subElementsMaybe.IfPresent(
-                        se => element = new NodeElement(style, se.AsNodeList().Select(node => ReadElement(node, nestedDungeonCollector)).ToArray()),
-                        () => element = new NodeElement(style)
+                        se => element = new NodeElement(style, CollectMetaData(config), se.AsNodeList().Select(node => ReadElement(node, nestedDungeonCollector)).ToArray()),
+                        () => element = new NodeElement(style, CollectMetaData(config))
                     );
-                    element.IsOptional = config.TryQuery("optional").IsPresent;
-                    element.IsTansit = config.TryQuery("transit").IsPresent;
                 }
             }
             {
@@ -121,11 +119,9 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
                     var subElementsMaybe = config.TryQuery("subs");
 
                     subElementsMaybe.IfPresent(
-                        se => { element = new ConnectionElement(style, length, se.AsNodeList().Select(node => ReadElement(node, nestedDungeonCollector)).ToArray()); },
-                        () => element = new ConnectionElement(style, length)
+                        se => { element = new ConnectionElement(style, CollectMetaData(config), length, se.AsNodeList().Select(node => ReadElement(node, nestedDungeonCollector)).ToArray()); },
+                        () => element = new ConnectionElement(style, CollectMetaData(config), length)
                     );
-                    element.IsOptional = config.TryQuery("optional").IsPresent;
-                    element.IsTansit = config.TryQuery("transit").IsPresent;
                 }
             }
             {
@@ -138,40 +134,43 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
                     nestedDungeonCollector.Add(path);
 
                     subElementsMaybe.IfPresent(
-                        se => { element = new NestedDungeon(path, se.AsNodeList().Select(node => ReadElement(node, nestedDungeonCollector)).ToArray()); },
-                        () => element = new NestedDungeon(path)
+                        se => { element = new NestedDungeon(path, CollectMetaData(config), se.AsNodeList().Select(node => ReadElement(node, nestedDungeonCollector)).ToArray()); },
+                        () => element = new NestedDungeon(path, CollectMetaData(config))
                     );
-                    element.IsOptional = config.TryQuery("optional").IsPresent;
-                    element.IsTansit = config.TryQuery("transit").IsPresent;
                 }
             }
 
             if (element == null)
                 throw new Exception("unknown dungeon element type!");
 
-            ReadAndAddTags(config, element);
-
             return element;
-        }
-
-        private static void ReadAndAddTags(ConfigNode config, ITagHolder element)
-        {
-            ReadTags(config).ForEach(element.AddTag);
         }
 
         private static IEnumerable<string> ReadTags(ConfigNode config)
         {
             IEnumerable<string> tags = new HashSet<string>();
-            config.TryQuery("tags").IfPresent(tagsNode => { tags = tagsNode.AsNodeList().Select(tagNode =>tagNode.AsString()); });
+            config.TryQuery("tags").IfPresent(tagsNode => { tags = tagsNode.AsNodeList().Select(tagNode => tagNode.AsString()); });
             return tags;
         }
 
         private static void AddParentTagsRecursive(AbstractDungeonElement element, IEnumerable<string> tags)
         {
             element.SubElements.ForEach(s => AddParentTagsRecursive(s, tags));
-            tags.ForEach(element.AddTag);
+            tags.ForEach(element.ElementMetaData.AddTag);
+        }
+
+        private static NodeMetaData CollectMetaData(ConfigNode config)
+        {
+            NodeMetaData metaData = new NodeMetaData(ReadBranchData(config),
+                new PropertyAndTagHolder()
+                    .Also(p => ReadTags(config).ForEach(p.AddTag)));
+
+            metaData.IsTransit = config.TryQuery("transit").IsPresent;
+            if (config.TryQuery("optional").IsPresent)
+                metaData.OptionalNodeData = new OptionalNodeData {Required = true};
+
+            return metaData;
         }
     }
 }
 #endif
-

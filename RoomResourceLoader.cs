@@ -20,8 +20,8 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             var startElement = dungeonStructure.StartElement;
             LoadRoomPrototypesRecur(startElement, collector);
 
-            if (dungeonStructure.StructureMetaData.BranchDataWrapper != null)
-                foreach (var prototypeName in dungeonStructure.StructureMetaData.BranchDataWrapper.BranchPrototypeNames)
+            if (dungeonStructure.NodeMetaData.BranchDataWrapper != null)
+                foreach (var prototypeName in dungeonStructure.NodeMetaData.BranchDataWrapper.BranchPrototypeNames)
                 {
                     LoadRoomPrototypesRecur(dungeonStructure.AbstractStructure.EmbeddedDungeons[prototypeName].StartElement, collector);
                 }

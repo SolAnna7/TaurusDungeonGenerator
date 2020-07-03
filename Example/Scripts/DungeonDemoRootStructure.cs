@@ -9,21 +9,21 @@ namespace TaurusDungeonGenerator.Example.Scripts
     {
         private Dictionary<string, AbstractDungeonStructure> _dungeonStructures = new Dictionary<string, AbstractDungeonStructure>();
 
-        public Dictionary<string, AbstractDungeonStructure> CreateInlineDungeonStructures()
+        private static Dictionary<string, AbstractDungeonStructure> CreateInlineDungeonStructures()
         {
             var branches = new Dictionary<string, AbstractDungeonStructure>
             {
                 {
                     "b1",
                     new AbstractDungeonStructure(
-                        new ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(1, 5),
-                            new NodeElement("DungeonGenerationTest/EndRoom")))
+                        new ConnectionElement("DungeonGenerationTest/Corridors", NodeMetaData.Empty(), new RangeI(1, 5),
+                            new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty())))
                 },
                 {
                     "b2",
                     new AbstractDungeonStructure(
-                        new ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(3, 7),
-                            new NodeElement("DungeonGenerationTest/EndRoom")))
+                        new ConnectionElement("DungeonGenerationTest/Corridors", NodeMetaData.Empty(), new RangeI(3, 7),
+                            new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty())))
                 }
             };
 
@@ -32,25 +32,25 @@ namespace TaurusDungeonGenerator.Example.Scripts
                 {
                     "Cross",
                     new AbstractDungeonStructure(
-                        new NodeElement("DungeonGenerationTest/CorrX",
-                            new ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(5, 10),
-                                new NodeElement("DungeonGenerationTest/EndRoom")),
-                            new ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(5),
-                                new NodeElement("DungeonGenerationTest/EndRoom")),
-                            new ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(5, 10),
-                                new NodeElement("DungeonGenerationTest/EndRoom")),
-                            new ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(3, 4),
-                                new NodeElement("DungeonGenerationTest/EndRoom"))
+                        new NodeElement("DungeonGenerationTest/CorrX", NodeMetaData.Empty(),
+                            new ConnectionElement("DungeonGenerationTest/Corridors", NodeMetaData.Empty(), new RangeI(5, 10),
+                                new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty())),
+                            new ConnectionElement("DungeonGenerationTest/Corridors", NodeMetaData.Empty(), new RangeI(5),
+                                new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty())),
+                            new ConnectionElement("DungeonGenerationTest/Corridors", NodeMetaData.Empty(), new RangeI(5, 10),
+                                new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty())),
+                            new ConnectionElement("DungeonGenerationTest/Corridors", NodeMetaData.Empty(), new RangeI(3, 4),
+                                new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty()))
                         ))
                 },
                 {
                     "002",
                     new AbstractDungeonStructure(
-                        new NodeElement("DungeonGenerationTest/CorrX",
-                            new ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(10, 15),
-                                new NodeElement("DungeonGenerationTest/EndRoom")),
-                            new ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(3, 4),
-                                new NodeElement("DungeonGenerationTest/EndRoom"))
+                        new NodeElement("DungeonGenerationTest/CorrX", NodeMetaData.Empty(),
+                            new ConnectionElement("DungeonGenerationTest/Corridors", NodeMetaData.Empty(), new RangeI(10, 15),
+                                new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty())),
+                            new ConnectionElement("DungeonGenerationTest/Corridors", NodeMetaData.Empty(), new RangeI(3, 4),
+                                new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty()))
                         ))
                 }
             };
@@ -59,7 +59,6 @@ namespace TaurusDungeonGenerator.Example.Scripts
             {
                 x.Value.EmbeddedDungeons = branches;
                 x.Value.BranchDataWrapper = new BranchDataWrapper(branches.Keys.ToList(), 0);
-
             });
 
             return structures;

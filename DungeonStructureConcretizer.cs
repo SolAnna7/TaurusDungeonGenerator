@@ -13,7 +13,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
         {
             var structure = new DungeonStructure(ConcretizeDungeonTree(inputStructure.StartElement, random,
                 new ReadOnlyDictionary<string, AbstractDungeonStructure>(inputStructure.EmbeddedDungeons)), inputStructure);
-            structure.StructureMetaData.BranchDataWrapper = inputStructure.BranchDataWrapper;
+            structure.NodeMetaData.BranchDataWrapper = inputStructure.BranchDataWrapper;
             return structure;
         }
 
@@ -25,18 +25,18 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                 {
                     DungeonNode copyNode;
                     if (node.IsEndNode)
-                        copyNode = new DungeonNode(node.Style, node.TagAndPropertyHolder);
+                        copyNode = new DungeonNode(node.Style, (NodeMetaData) node.ElementMetaData.Clone());
                     else
                     {
                         List<DungeonNode> subElements = node.SubElements.Select(element => ConcretizeDungeonTree(element, random, embeddedDungeons)).ToList();
-                        copyNode = new DungeonNode(node.Style, node.TagAndPropertyHolder, subElements);
+                        copyNode = new DungeonNode(node.Style, (NodeMetaData) node.ElementMetaData.Clone(), subElements);
                     }
 
                     if (node.IsOptional)
-                        copyNode.StructureMetaData.OptionalNodeData = new OptionalNodeData();
+                        copyNode.MetaData.OptionalNodeData = new OptionalNodeData();
 
                     if (node.IsTansit)
-                        copyNode.StructureMetaData.IsTransit = true;
+                        copyNode.MetaData.IsTransit = true;
 
                     return copyNode;
                 }
@@ -55,18 +55,18 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                     for (int i = 0; i < connectionLength; i++)
                     {
                         replacementNode = replacementNode != null
-                            ? new DungeonNode(connection.Style, connection.TagAndPropertyHolder, new List<DungeonNode> {replacementNode})
-                            : new DungeonNode(connection.Style, connection.TagAndPropertyHolder);
+                            ? new DungeonNode(connection.Style, (NodeMetaData) connection.ElementMetaData.Clone(), new List<DungeonNode> {replacementNode})
+                            : new DungeonNode(connection.Style, (NodeMetaData) connection.ElementMetaData.Clone());
                     }
 
                     if (replacementNode == null)
                         throw new Exception("This should not happen");
 
                     if (connection.IsOptional)
-                        replacementNode.StructureMetaData.OptionalNodeData = new OptionalNodeData();
+                        replacementNode.MetaData.OptionalNodeData = new OptionalNodeData();
 
                     if (connection.IsTansit)
-                        replacementNode.StructureMetaData.IsTransit = true;
+                        replacementNode.MetaData.IsTransit = true;
 
                     return replacementNode;
                 }
@@ -92,10 +92,10 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                     }
 
                     if (nested.IsOptional)
-                        nestedStartNode.StructureMetaData.OptionalNodeData = new OptionalNodeData();
+                        nestedStartNode.MetaData.OptionalNodeData = new OptionalNodeData();
 
                     if (nested.IsTansit)
-                        nestedStartNode.StructureMetaData.IsTransit = true;
+                        nestedStartNode.MetaData.IsTransit = true;
 
                     return nestedStartNode;
                 }

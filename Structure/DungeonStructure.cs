@@ -6,11 +6,12 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
     public class DungeonStructure
     {
         public DungeonNode StartElement { get; }
-        
-        public StructureMetaData StructureMetaData => StartElement.StructureMetaData;
+
+        public NodeMetaData NodeMetaData => StartElement.MetaData;
+        public StructureMetaData StructureMetaData { get; } = new StructureMetaData();
 
         public AbstractDungeonStructure AbstractStructure { get; }
-        
+
         public DungeonStructure(DungeonNode startElement, AbstractDungeonStructure abstractStructure)
         {
             StartElement = startElement;
@@ -39,19 +40,37 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         }
     }
 
-    public class StructureMetaData : IBranchDataHolder
+    public class StructureMetaData : ITagHolder, IPropertyHolder
     {
-        public bool IsTransit { get; set; } = false;
+        public float MarginUnit { get; set; }
+        
+        
+        #region Tag and property data
 
-        //includes this node if it is a transit
-        public int SubTransitNum { get; set; } = 0;
-        public List<DungeonNode> ChildOptionalNodes { get; set; } = new List<DungeonNode>();
-        public OptionalNodeData OptionalNodeData = null;
-        public BranchDataWrapper BranchDataWrapper { get; set; }
+        private readonly PropertyAndTagHolder _tagAndPropertyHolder = new PropertyAndTagHolder();
+
+        public PropertyAndTagHolder TagAndPropertyHolder => _tagAndPropertyHolder;
+
+        public object GetProperty(string key) => TagAndPropertyHolder.GetProperty(key);
+
+        public T GetPropertyAs<T>(string key) => TagAndPropertyHolder.GetPropertyAs<T>(key);
+
+        public bool HasProperty(string key) => TagAndPropertyHolder.HasProperty(key);
+        public IEnumerable<Tuple<string, object>> GetProperties() => TagAndPropertyHolder.GetProperties();
+
+        public void AddProperty<T>(string key, T value) => TagAndPropertyHolder.AddProperty(key, value);
+
+        public void RemoveProperty(string key) => TagAndPropertyHolder.RemoveProperty(key);
+
+        public bool HasTag(string tag) => TagAndPropertyHolder.HasTag(tag);
+
+        public IEnumerable<string> GetTags() => TagAndPropertyHolder.GetTags();
+
+        public void AddTag(string tag) => TagAndPropertyHolder.AddTag(tag);
+
+        public void RemoveTag(string tag) => TagAndPropertyHolder.RemoveTag(tag);
+
+        #endregion
     }
 
-    public class OptionalNodeData
-    {
-        public bool Required { get; set; } = true;
-    }
 }

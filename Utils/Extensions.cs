@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Boo.Lang;
 
 namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils
 {
@@ -30,5 +31,17 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils
             }
         }
 
+        //Kotlin style scope functions
+        
+        public static T Also<T>(this T obj, Action<T> a)
+        {
+            a(obj);
+            return obj;
+        }
+
+        public static TR Let<T, TR>(this T obj, Function<T, TR> f)
+        {
+            return f(obj);
+        }
     }
 }

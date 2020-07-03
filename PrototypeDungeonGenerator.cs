@@ -76,8 +76,8 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
 
             TryCreateDungeonStructure(firstRoomWrapper);
 
-            firstRoomWrapper.ActualGraphElement.AddTag("ROOT");
-            firstRoomWrapper.ActualGraphElement.TraverseTopToDown().ForEach(n => n.AddTag("MAIN"));
+            firstRoomWrapper.ActualGraphElement.MetaData.AddTag("ROOT");
+            firstRoomWrapper.ActualGraphElement.TraverseTopToDown().ForEach(n => n.MetaData.AddTag("MAIN"));
 
             CreateBranches(firstRoomWrapper);
 
@@ -97,8 +97,8 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
 
             if (requiredTransitNum >= 0)
             {
-                var maxTransitNum = _loadedStructure.StructureMetaData.SubTransitNum;
-                var minTransitNum = maxTransitNum - _loadedStructure.StructureMetaData.ChildOptionalNodes.Sum(x => x.StructureMetaData.SubTransitNum);
+                var maxTransitNum = _loadedStructure.NodeMetaData.SubTransitNum;
+                var minTransitNum = maxTransitNum - _loadedStructure.NodeMetaData.ChildOptionalNodes.Sum(x => x.MetaData.SubTransitNum);
 
                 if (maxTransitNum < requiredTransitNum)
                 {
@@ -113,14 +113,14 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                 var remainingOptionalsToDisable = maxTransitNum - (requiredTransitNum - minTransitNum);
 
                 //todo: this algorithm will not work with multiple level options, only top level
-                var topLevelOptionalNodes = _loadedStructure.StructureMetaData.ChildOptionalNodes.ToList().OrderByDescending(x => x.StructureMetaData.SubTransitNum).ToList();
+                var topLevelOptionalNodes = _loadedStructure.NodeMetaData.ChildOptionalNodes.ToList().OrderByDescending(x => x.MetaData.SubTransitNum).ToList();
 
                 foreach (var optionalNode in topLevelOptionalNodes)
                 {
-                    if (remainingOptionalsToDisable > 0 && optionalNode.StructureMetaData.SubTransitNum <= remainingOptionalsToDisable)
+                    if (remainingOptionalsToDisable > 0 && optionalNode.MetaData.SubTransitNum <= remainingOptionalsToDisable)
                     {
-                        optionalNode.StructureMetaData.OptionalNodeData.Required = false;
-                        remainingOptionalsToDisable -= optionalNode.StructureMetaData.SubTransitNum;
+                        optionalNode.MetaData.OptionalNodeData.Required = false;
+                        remainingOptionalsToDisable -= optionalNode.MetaData.SubTransitNum;
                     }
                 }
 
@@ -133,7 +133,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
 
         private void CreateBranches(RoomPrototype firstRoomWrapper)
         {
-            var branchDataWrapper = _loadedStructure.StructureMetaData.BranchDataWrapper;
+            var branchDataWrapper = _loadedStructure.NodeMetaData.BranchDataWrapper;
 
             if (branchDataWrapper == null)
                 return;
@@ -168,7 +168,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                 {
                     remainingBranchNum--;
                     connection.ParentRoomPrototype.ActualGraphElement.AddSubElement(concretizedDungeonBranch);
-                    concretizedDungeonBranch.TraverseTopToDown().ForEach(n => n.AddTag("BRANCH"));
+                    concretizedDungeonBranch.TraverseTopToDown().ForEach(n => n.MetaData.AddTag("BRANCH"));
                 }
 
                 extremeCntr--;
@@ -317,7 +317,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             if (actualGraphElement.IsEndNode)
                 return true;
 
-            var subElements = actualGraphElement.SubElements.Where(sub => sub.StructureMetaData.OptionalNodeData?.Required ?? true).ToList();
+            var subElements = actualGraphElement.SubElements.Where(sub => sub.MetaData.OptionalNodeData?.Required ?? true).ToList();
             for (int connectionsToMake = subElements.Count; connectionsToMake > 0; connectionsToMake--)
             {
                 IList<RoomPrototypeConnection> availableConnections = room.ChildRoomConnections
@@ -547,18 +547,18 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             CollectMetaData(dungeonStructure.StartElement, roomsByPath);
         }
 
-        private static StructureMetaData CollectMetaData(DungeonNode dungeonElement, Dictionary<string, RoomCollection> roomsByPath)
+        private static NodeMetaData CollectMetaData(DungeonNode dungeonElement, Dictionary<string, RoomCollection> roomsByPath)
         {
-            IList<StructureMetaData> subMetaDataList = dungeonElement.SubElements.Select(s => CollectMetaData(s, roomsByPath)).ToList();
+            IList<NodeMetaData> subMetaDataList = dungeonElement.SubElements.Select(s => CollectMetaData(s, roomsByPath)).ToList();
 
-            dungeonElement.StructureMetaData.SubTransitNum = subMetaDataList.Aggregate(dungeonElement.StructureMetaData.IsTransit ? 1 : 0, (sum, e) => sum + e.SubTransitNum);
-            dungeonElement.StructureMetaData.ChildOptionalNodes = dungeonElement.SubElements.SelectMany(e =>
+            dungeonElement.MetaData.SubTransitNum = subMetaDataList.Aggregate(dungeonElement.MetaData.IsTransit ? 1 : 0, (sum, e) => sum + e.SubTransitNum);
+            dungeonElement.MetaData.ChildOptionalNodes = dungeonElement.SubElements.SelectMany(e =>
             {
-                var m = e.StructureMetaData;
+                var m = e.MetaData;
                 return m.OptionalNodeData != null ? new List<DungeonNode> {e} : m.ChildOptionalNodes;
             }).ToList();
 
-            return dungeonElement.StructureMetaData;
+            return dungeonElement.MetaData;
         }
 
         public class GenerationParameters

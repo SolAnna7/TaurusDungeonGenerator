@@ -9,6 +9,10 @@
           tags:
             - aaa
             - xxx
+          properties:
+            - aaa:
+                xxx: 1234
+                yyy: 5678
               
 
   graph-test:

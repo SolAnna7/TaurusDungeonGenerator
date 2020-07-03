@@ -41,8 +41,8 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils
 
         private static Color ElementColorBasedOnPath(DungeonNode node, int depth)
         {
-            bool isBranch = node.GetTags().Contains("BRANCH");
-            bool isTransit = node.StructureMetaData.IsTransit;
+            bool isBranch = node.MetaData.GetTags().Contains("BRANCH");
+            bool isTransit = node.MetaData.IsTransit;
             bool isStart = depth == 0;
 
             float intensity = (float) (0.7 + 0.3 * Math.Sin(depth / Math.PI + 5));
@@ -74,7 +74,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils
         private static string GetSummaryTextForRoom(Room room)
         {
             var roomDungeonStructureNode = room.DungeonStructureNode;
-            var tags = room.DungeonStructureNode.GetTags().ToList();
+            var tags = room.DungeonStructureNode.MetaData.GetTags().ToList();
 
             StringBuilder sb = new StringBuilder();
             sb.Append(roomDungeonStructureNode.Style);
