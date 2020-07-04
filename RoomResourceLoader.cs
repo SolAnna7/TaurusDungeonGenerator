@@ -50,7 +50,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             var rooms = Resources.Load<RoomCollection>(style);
             if (rooms == null)
             {
-                throw new Exception($"Room collection not found: Dungeons/{style}");
+                throw new Exception($"Room collection not found: {style}");
             }
 
             return rooms;
