@@ -21,6 +21,8 @@ namespace TaurusDungeonGenerator.Example.Scripts
         public InputField seedText;
         public Dropdown structureDropdown;
         public Slider branchSlider;
+        public Slider marginSlider;
+        public Text marginText;
 
         private DungeonStructure _actualStructure;
 
@@ -29,23 +31,25 @@ namespace TaurusDungeonGenerator.Example.Scripts
         void Start()
         {
             structureDropdown.ClearOptions();
-            _dungeonStructures = LoadStructureFromConfig() ?? CreateInlineDungeonStructures();
+            _dungeonStructures = LoadStructure();
             structureDropdown.AddOptions(_dungeonStructures.Keys.ToList());
             ReBuildDungeonFromSeed();
         }
 
-        private Dictionary<string, AbstractDungeonStructure> LoadStructureFromConfig()
+        private Dictionary<string, AbstractDungeonStructure> LoadStructure()
         {
 #if SFG_PISCES_CONFIG
             Dictionary<string, AbstractDungeonStructure> result = new Dictionary<string, AbstractDungeonStructure>();
             gameObject.AddComponent<ConfigReaderComponent>();
             GameConfig.InitConfig();
 
-            GameConfig.Query("dungeons").AsNode().GetKeys().ForEach(
-                k => result.Add(k, DungeonStructureConfigLoader.BuildFromConfig(new ConfigPath(k))));
+            GameConfig.Query("dungeons").AsNode().GetKeys()
+                .Select(key => (key, DungeonStructureConfigLoader.BuildFromConfig(new ConfigPath(key))))
+                .Where(x => !x.Item2.StructureMetaData.HasTag("NESTED_ONLY"))
+                .ForEach(k => result.Add(k.key, k.Item2));
             return result;
 #else
-            return null;
+            CreateInlineDungeonStructures();
 #endif
         }
 
@@ -74,7 +78,15 @@ namespace TaurusDungeonGenerator.Example.Scripts
                 Destroy(child.gameObject);
 
             // ReSharper disable once Unity.NoNullPropagation
-            BuildDungeon(GetSelectedStructure(), seedText?.text?.GetHashCode() ?? 0, GetBranchPercent());
+            BuildDungeon(GetSelectedStructure(), seedText?.text?.GetHashCode() ?? 0, GetBranchPercent(), GetMargin());
+        }
+
+        private float GetMargin()
+        {
+            // ReSharper disable once Unity.NoNullPropagation
+            var marginSliderValue = marginSlider?.value ?? 0;
+            marginText.text = $"{marginSliderValue} Unit";
+            return marginSliderValue;
         }
 
         private AbstractDungeonStructure GetSelectedStructure()
@@ -89,10 +101,12 @@ namespace TaurusDungeonGenerator.Example.Scripts
             return branchSlider?.value ?? 50;
         }
 
-        private void BuildDungeon(AbstractDungeonStructure structure, int generationSeed, float branchPercent)
+        private void BuildDungeon(AbstractDungeonStructure structure, int generationSeed, float branchPercent, float margin)
         {
             if (structure.BranchDataWrapper != null)
                 structure.BranchDataWrapper.BranchPercentage = branchPercent;
+
+            structure.StructureMetaData.MarginUnit = margin;
 
             var generator = new PrototypeDungeonGenerator(structure, generationSeed);
             var prototypeDungeon = generator.BuildPrototype();

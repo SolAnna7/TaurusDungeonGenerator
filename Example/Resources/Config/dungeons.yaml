@@ -1,6 +1,8 @@
 ﻿dungeons:
 
   nested-test:
+    structure-tags:
+      - NESTED_ONLY
     start-node:
       connection: DungeonGenerationTest/Corridors
       length: 1_2

@@ -29,13 +29,15 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
 
         private readonly GenerationParameters _generationParameters;
 
-        public int _retryNum = 10;
+        public const int _retryNum = 10;
 
-        private const int maxSteps = 10000;
+        private const int maxSteps = 512;
         private int _stepsMade;
 
         private Random _random;
         private int _seed = 0;
+
+        private float _marginHalf = 0f;
 
         public PrototypeDungeonGenerator(AbstractDungeonStructure structure, int seed, GenerationParameters generationParameters = null)
         {
@@ -44,6 +46,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             _generationParameters = generationParameters;
             _loadedStructure = DungeonStructureConcretizer.ConcretizeStructure(structure, _random);
             _loadedRooms = RoomResourceLoader.LoadRoomPrototypes(_loadedStructure);
+            _marginHalf = structure.StructureMetaData.MarginUnit / 2f;
             CollectMetaData(_loadedStructure, _loadedRooms);
 
             if (_generationParameters != null)
@@ -210,103 +213,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
 
             throw new Exception("Dungeon building failed!");
         }
-
-
-        //nem rekurzív generálási kísérlet, teszteletlen
-        // [Obsolete]
-        // private void BuildConnection()
-        // {
-        //     _stepsMade++;
-        //     if (_stepsMade > maxSteps)
-        //     {
-        //         throw new MaxStepsReachedException(_stepsMade);
-        //     }
-        //
-        //     var generationItem = _connectionStack.Pop();
-        //     var connection = generationItem.Connection;
-        //     var nextNode = generationItem.Node;
-        //
-        //     //már van szoba a végén
-        //     if (connection.ChildRoomPrototype != null)
-        //     {
-        //         RoomPrototype baseRoom = connection.ChildRoomPrototype;
-        //
-        //         var childConnections = baseRoom.ChildRoomConnections;
-        //
-        //         //ha kevesebbet sikerült összekötni, mint amennyit kellett volna, újrakezdjük másik szobával
-        //         if (childConnections.Count(c => c.State == ConnectionState.CONNECTED) < nextNode.SubElements.Count)
-        //         {
-        //             connection.ClearChild();
-        //             _connectionStack.Push(generationItem);
-        //         }
-        //
-        //         return;
-        //     }
-        //
-        //     //új conn
-        //     if (connection.ChildRoomPrototype == null)
-        //     {
-        //         if (generationItem.Rooms == null)
-        //         {
-        //             generationItem.Rooms = new Stack<Room>(GetRandomRooms(nextNode));
-        //         }
-        //
-        //         var possibleRooms = generationItem.Rooms;
-        //
-        //         //minden lehetőséget kimerítettünk, nem sikerült megépíteni a szobát
-        //         if (possibleRooms.Count == 0)
-        //         {
-        //             connection.Fail();
-        //             //todo: ha már nem lehet létrehozni megfelelő kapcsolatot, akkor a testvéreket kiírtani a stack-ről
-        //             return;
-        //         }
-        //
-        //         var selectedRoom = possibleRooms.Pop();
-        //         RoomPrototype baseRoom = connection.ParentRoomPrototype;
-        //
-        //         IEnumerable<RoomConnector> possibleNextConnections = selectedRoom
-        //             .GetConnections()
-        //             .Where(c => c.size.Equals(connection.ParentConnection.size) && c.type == connection.ParentConnection.type).ToList();
-        //
-        //
-        //         foreach (var nextRoomConnection in possibleNextConnections)
-        //         {
-        //             var nextRoomConnectionTransform = nextRoomConnection.transform;
-        //             var selectedConnectionTransform = connection.ParentConnection.transform;
-        //
-        //             Vector3 newRoomPosition;
-        //             Quaternion rotationDiff;
-        //             GetNewRoomPosAndRot(baseRoom.GlobalPosition, baseRoom.Rotation, selectedConnectionTransform, nextRoomConnectionTransform, out newRoomPosition, out rotationDiff);
-        //
-        //             var nextRoomWrapper = new RoomPrototype(
-        //                 nextNode,
-        //                 selectedRoom,
-        //                 newRoomPosition,
-        //                 rotationDiff
-        //             );
-        //
-        //             if (!TryAddRoomToVirtualSpace(nextRoomWrapper, baseRoom))
-        //             {
-        //                 //nem sikerült elhelyezni az adott szobát az adott kapcsolattal
-        //             }
-        //             else
-        //             {
-        //                 nextRoomWrapper.ConnectToParent(nextRoomConnection, connection);
-        //                 _connectionStack.Push(generationItem);
-        //
-        //
-        //                 var builtRoomChildConnections = nextRoomWrapper.ChildRoomConnections.ToList();
-        //                 builtRoomChildConnections.Shuffle(_random);
-        //
-        //                 for (var i = 0; i < nextNode.SubElements.Count; i++)
-        //                 {
-        //                     _connectionStack.Push(new GenerationStackItem(builtRoomChildConnections[i], nextNode.SubElements[i]));
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-
+        
         private bool BuildPrototypeRoomRecur(RoomPrototype room)
         {
 #if TAURUS_DEBUG_LOG
@@ -346,7 +253,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                     }
                 }
 
-                // building cannot be succesful
+                // building cannot be successful
                 if (failed)
                 {
 #if TAURUS_DEBUG_LOG
@@ -464,12 +371,30 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
         private bool TryAddRoomToVirtualSpace(RoomPrototype room, RoomPrototype parentRoom)
         {
             var bounds = room.GetRotatedBounds();
+            bounds.extents += new Vector3(_marginHalf, _marginHalf, _marginHalf);
 
             List<RoomPrototype> collidingWith = new List<RoomPrototype>();
             _virtualSpace.GetColliding(collidingWith, bounds);
-            if (collidingWith.Count > 1 || collidingWith.Count == 1 && collidingWith[0] != parentRoom)
+            if (_marginHalf <= 0.01)
             {
-                return false;
+                if (collidingWith.Count > 1 || collidingWith.Count == 1 && collidingWith[0] != parentRoom)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (collidingWith.Count > 2)
+                    return false;
+
+                //trying without margins
+                bounds = room.GetRotatedBounds();
+                collidingWith.Clear();
+                _virtualSpace.GetColliding(collidingWith, bounds);
+                if (collidingWith.Count > 1 || collidingWith.Count == 1 && collidingWith[0] != parentRoom)
+                {
+                    return false;
+                }
             }
 
             _virtualSpace.Add(room, bounds);
@@ -480,7 +405,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
         private Room GetRandomRoom(DungeonNode element)
         {
             var roomCollection = _loadedRooms[element.Style];
-            //todo súlyozás
+            //todo weighting
             return roomCollection.rooms[_random.Next(roomCollection.rooms.Count)];
         }
 
