@@ -23,6 +23,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         }
 
         public void AddSubElement(DungeonNode newSub) => SubElements.Add(newSub);
+        public void RemoveSubElement(DungeonNode newSub) => SubElements.Remove(newSub);
 
         public bool IsEndNode => SubElements == null || SubElements.Count == 0;
         public IEnumerable<ITraversableTree<DungeonNode>> Children => SubElements;

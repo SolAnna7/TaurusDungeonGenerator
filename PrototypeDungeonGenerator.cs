@@ -132,6 +132,25 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                     throw new Exception("Dungeon cannot be built with parameters. Optional structure cannot be optimized.");
                 }
             }
+
+            //remove not required optional nodes
+            List<Tuple<DungeonNode, DungeonNode>> nodesToRemove = new List<Tuple<DungeonNode, DungeonNode>>();
+
+            foreach (var dungeonNode in _loadedStructure.StartElement.TraverseTopToDown())
+            {
+                foreach (var dungeonNodeChild in dungeonNode.Children)
+                {
+                    if ((dungeonNodeChild.Node.MetaData.OptionalNodeData?.Required ?? true) == false)
+                    {
+                        nodesToRemove.Add(new Tuple<DungeonNode, DungeonNode>(dungeonNode.Node, dungeonNodeChild.Node));
+                    }
+                }
+            }
+
+            foreach (var tuple in nodesToRemove)
+            {
+                tuple.Item1.RemoveSubElement(tuple.Item2);
+            }
         }
 
         private void CreateBranches(RoomPrototype firstRoomWrapper)
@@ -213,7 +232,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
 
             throw new Exception("Dungeon building failed!");
         }
-        
+
         private bool BuildPrototypeRoomRecur(RoomPrototype room)
         {
 #if TAURUS_DEBUG_LOG
