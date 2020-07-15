@@ -247,7 +247,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             for (int connectionsToMake = subElements.Count; connectionsToMake > 0; connectionsToMake--)
             {
                 IList<RoomPrototypeConnection> availableConnections = room.ChildRoomConnections
-                    .Where(x => x.State == ConnectionState.FREE)
+                    .Where(x => x.State == PrototypeConnectionState.FREE)
                     .ToList()
                     .Shuffle(_random);
 
@@ -449,11 +449,11 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
         {
             foreach (var childRoomConnection in roomPrototype.ChildRoomConnections)
             {
-                if (childRoomConnection.State == ConnectionState.FREE)
+                if (childRoomConnection.State == PrototypeConnectionState.FREE)
                 {
                     resultCollector.Add(childRoomConnection);
                 }
-                else if (childRoomConnection.State == ConnectionState.CONNECTED)
+                else if (childRoomConnection.State == PrototypeConnectionState.CONNECTED)
                 {
                     CollectOpenConnectionsRecursively(childRoomConnection.ChildRoomPrototype, resultCollector);
                 }

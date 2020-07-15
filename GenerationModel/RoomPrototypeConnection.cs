@@ -2,24 +2,26 @@ using SnowFlakeGamesAssets.TaurusDungeonGenerator.Component;
 
 namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.GenerationModel
 {
-    internal enum ConnectionState
+    internal enum PrototypeConnectionState
     {
         FREE,
-        FAILED,
         CONNECTED,
         CLOSED
     }
 
+    /// <summary>
+    /// A connection between RoomPrototypes
+    /// </summary>
     internal class RoomPrototypeConnection
     {
         public RoomPrototypeConnection(RoomPrototype parentRoomPrototype, RoomConnector parentConnection)
         {
             ParentConnection = parentConnection;
             ParentRoomPrototype = parentRoomPrototype;
-            State = ConnectionState.FREE;
+            State = PrototypeConnectionState.FREE;
         }
 
-        internal ConnectionState State { get; private set; }
+        internal PrototypeConnectionState State { get; private set; }
 
         internal readonly RoomConnector ParentConnection;
         internal RoomConnector ChildConnection;
@@ -31,18 +33,16 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.GenerationModel
         {
             ChildConnection = childConnection;
             ChildRoomPrototype = childRoomPrototype;
-            State = ConnectionState.CONNECTED;
+            State = PrototypeConnectionState.CONNECTED;
         }
 
         public void ClearChild()
         {
             ChildConnection = null;
             ChildRoomPrototype = null;
-            State = ConnectionState.FREE;
+            State = PrototypeConnectionState.FREE;
         }
 
-        public void Close() => State = ConnectionState.CLOSED;
-        
-        public void Fail() => State = ConnectionState.FAILED;
+        public void Close() => State = PrototypeConnectionState.CLOSED;
     }
 }

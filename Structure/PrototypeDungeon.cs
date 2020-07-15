@@ -40,7 +40,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
 
 //                var x = PrefabUtility.GetCorrespondingObjectFromSource(instantiatedRoom.GetConnections().ToList()[0]);
 
-                if (prototypeConnection.State == ConnectionState.CONNECTED)
+                if (prototypeConnection.State == PrototypeConnectionState.CONNECTED)
                 {
                     var nextRoom = BuildDungeonInUnitySpaceRecur(prototypeConnection.ChildRoomPrototype, parent);
                     var childConn = nextRoom.GetConnections().Single(c => c.name == prototypeConnection.ChildConnection.name &&
@@ -50,7 +50,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
                     CreateOpenReplacement(parentConn);
                     CreateOpenReplacement(childConn);
                 }
-                else if (prototypeConnection.State == ConnectionState.CLOSED)
+                else if (prototypeConnection.State == PrototypeConnectionState.CLOSED)
                 {
                     parentConn.Close();
                     CreateClosedReplacement(parentConn);

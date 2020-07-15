@@ -44,7 +44,7 @@ namespace TaurusDungeonGenerator.Example.Scripts
             GameConfig.InitConfig();
 
             GameConfig.Query("dungeons").AsNode().GetKeys()
-                .Select(key => (key, DungeonStructureConfigLoader.BuildFromConfig(new ConfigPath(key))))
+                .Select(key => (key, DungeonStructureConfigLoader.BuildFromConfig(new ConfigPath("dungeons",key))))
                 .Where(x => !x.Item2.StructureMetaData.HasTag("NESTED_ONLY"))
                 .ForEach(k => result.Add(k.key, k.Item2));
             return result;

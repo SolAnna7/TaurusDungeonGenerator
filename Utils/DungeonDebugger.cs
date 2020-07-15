@@ -86,5 +86,11 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils
 
             return sb.ToString();
         }
+        
+        private class DebugRoomWrapper : MonoBehaviour
+        {
+            public Room room;
+        }
     }
+    
 }

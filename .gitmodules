@@ -1,3 +1,6 @@
 [submodule "UnityOctree"]
 	path = UnityOctree
 	url = https://github.com/Nition/UnityOctree.git
+[submodule "ThirdParty/Unity-Reorderable-List"]
+	path = ThirdParty/Unity-Reorderable-List
+	url = git@github.com:cfoulston/Unity-Reorderable-List.git
