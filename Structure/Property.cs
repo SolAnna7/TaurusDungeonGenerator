@@ -5,9 +5,17 @@ using SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils;
 
 namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
 {
+    /// <summary>
+    /// Interface for storing extra objects in the database structure
+    /// </summary>
     public interface IPropertyHolder
     {
         object GetProperty(string key);
+        /// <summary>
+        /// Returns property caster to type T
+        /// </summary>
+        /// <param name="key">The key of the property</param>
+        /// <typeparam name="T">The type to cast</typeparam>
         T GetPropertyAs<T>(string key);
         bool HasProperty(string key);
         IEnumerable<Tuple<string, object>> GetProperties();
@@ -15,6 +23,9 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         void RemoveProperty(string key);
     }
 
+    /// <summary>
+    /// Interface for storing string tags in the database structure
+    /// </summary>
     public interface ITagHolder
     {
         bool HasTag(string tag);
@@ -23,6 +34,9 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         void RemoveTag(string tag);
     }
 
+    /// <summary>
+    /// Wrapper class to store tags and properties
+    /// </summary>
     public class PropertyAndTagHolder : IPropertyHolder, ITagHolder, ICloneable
     {
         private Dictionary<string, object> _properties = new Dictionary<string, object>();

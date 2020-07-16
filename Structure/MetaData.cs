@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils;
-using UnityEngine.Profiling.Memory.Experimental;
 
 namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
 {
+    /// <summary>
+    /// The node specific non-structural data
+    /// </summary>
     public class NodeMetaData : IBranchDataHolder, ITagHolder, IPropertyHolder, ICloneable
     {
         public BranchDataWrapper BranchDataWrapper { get; set; }
@@ -14,6 +16,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
 
         //includes this node if it is a transit
         [Obsolete] public int SubTransitNum { get; set; } = 0;
+        
         public List<DungeonNode> ChildOptionalNodes { get; set; } = new List<DungeonNode>();
 
         public OptionalNodeData OptionalNodeData = null;
@@ -84,6 +87,9 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         }
     }
 
+    /// <summary>
+    /// Meta infos about the whole dungeon structure
+    /// </summary>
     public class StructureMetaData : ITagHolder, IPropertyHolder, ICloneable
     {
         public float MarginUnit { get; set; }

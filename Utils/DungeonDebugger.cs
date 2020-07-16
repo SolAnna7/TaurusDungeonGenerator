@@ -7,11 +7,18 @@ using UnityEngine;
 
 namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils
 {
-    public class DungeonDebugger
+    /// <summary>
+    /// Provides debug information and visualization about the built dungeons
+    /// </summary>
+    public static class DungeonDebugger
     {
-        public static void DrawDungeonDebugModeEditor(DungeonStructure structure)
+        /// <summary>
+        /// Draws the dungeon debug data in editor scene view
+        /// Should only be called from OnDrawGizmos or OnDrawGizmosSelected unity functions
+        /// </summary>
+        public static void DrawDungeonDebugGizmos(DungeonStructure structure)
         {
-            structure.StartElement.ForeachTopDownDepth((n, d) =>
+            structure.StartElement.ForeachDepthFirst((n, d) =>
             {
                 Gizmos.color = ElementColorBasedOnPath(n, d);
                 var bounds = n.Room.GetBounds();
@@ -19,9 +26,35 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils
             });
         }
 
-        public static void GenerateDungeonDebugStructure(DungeonStructure structure, Transform parent)
+        /// <summary>
+        /// Builds an object structure around the dungeon with the debug informations
+        /// Can be used in built games
+        /// </summary>
+        public static void GenerateDungeonDebugStructure(DungeonStructure structure, Transform parent = null)
         {
-            structure.StartElement.ForeachTopDownDepth((n, d) => { BuildDebugCube(parent, n, ElementColorBasedOnPath(n, d)); });
+            structure.StartElement.ForeachDepthFirst((n, d) => { BuildDebugCube(parent, n, ElementColorBasedOnPath(n, d)); });
+        }
+
+        /// <summary>
+        /// Gets a debug information about a Room or DebugRoomWrapper
+        /// </summary>
+        /// <param name="gameObject">The object to get the information about</param>
+        /// <returns>String with the debug data or null if object is not Room or DebugRoomWrapper</returns>
+        public static string TryGetSummaryTextForObject(GameObject gameObject)
+        {
+            Room room = gameObject.GetComponent<Room>();
+            if (room != null)
+            {
+                return GetSummaryTextForRoom(room);
+            }
+
+            var roomWrapper = gameObject.GetComponentInParent<DebugRoomWrapper>();
+            if (roomWrapper != null)
+            {
+                return GetSummaryTextForRoom(roomWrapper.room);
+            }
+
+            return null;
         }
 
         private static void BuildDebugCube(Transform parent, DungeonNode n, Color color)
@@ -54,23 +87,6 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils
             return color;
         }
 
-        public static string GetSummaryTextForObject(GameObject gameObject)
-        {
-            Room room = gameObject.GetComponent<Room>();
-            if (room != null)
-            {
-                return GetSummaryTextForRoom(room);
-            }
-
-            var roomWrapper = gameObject.GetComponent<DebugRoomWrapper>();
-            if (roomWrapper != null)
-            {
-                return GetSummaryTextForRoom(roomWrapper.room);
-            }
-
-            return null;
-        }
-
         private static string GetSummaryTextForRoom(Room room)
         {
             var roomDungeonStructureNode = room.DungeonStructureNode;
@@ -86,11 +102,10 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils
 
             return sb.ToString();
         }
-        
+
         private class DebugRoomWrapper : MonoBehaviour
         {
             public Room room;
         }
     }
-    
 }

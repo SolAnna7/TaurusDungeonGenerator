@@ -4,8 +4,15 @@ using Boo.Lang;
 
 namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils
 {
+    /// <summary>
+    /// Container of extensions used in Taurus
+    /// </summary>
     public static class Extensions
     {
+        /// <summary>
+        /// Randomizes the order of elements in a list. The input list is changed!
+        /// </summary>
+        /// <returns>The randomized list</returns>
         public static IList<T> Shuffle<T>(this IList<T> list, Random random)
         {
             int n = list.Count;
@@ -21,27 +28,37 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils
             return list;
         }
 
-        public static T AnyRandom<T>(this IList<T> list, Random random) => list[random.Next(list.Count)];
+        /// <summary>
+        /// Returns a random element of the list
+        /// </summary>
+        public static T GetRandomElement<T>(this IList<T> list, Random random) => list[random.Next(list.Count)];
 
-        public static void ForEach<T>(this IEnumerable<T> enu, Action<T> a)
+        /// <summary>
+        /// Java style foreach for IEnumerables
+        /// </summary>
+        public static void ForEach<T>(this IEnumerable<T> enu, Action<T> action)
         {
-            foreach (var item in enu)
-            {
-                a(item);
-            }
+            foreach (var item in enu) action(item);
         }
 
-        //Kotlin style scope functions
+        #region Kotlin style scope functions
         
+        /// <summary>
+        /// Kotlin style Also function
+        /// Calls the specified action with this value as its argument and returns this value
+        /// </summary>
         public static T Also<T>(this T obj, Action<T> a)
         {
             a(obj);
             return obj;
         }
 
-        public static TR Let<T, TR>(this T obj, Function<T, TR> f)
-        {
-            return f(obj);
-        }
+        /// <summary>
+        /// Kotlin style Let function
+        /// Calls the specified function with this value as its argument and returns its result
+        /// </summary>
+        public static Tr Let<T, Tr>(this T obj, Function<T, Tr> f) => f(obj);
+
+        #endregion
     }
 }

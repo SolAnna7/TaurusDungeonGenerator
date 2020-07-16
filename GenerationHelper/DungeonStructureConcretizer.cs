@@ -7,9 +7,12 @@ using SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils;
 
 namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
 {
-    public class DungeonStructureConcretizer
+    /// <summary>
+    /// Internal generation class used to create a DungeonStructure from an AbstractDungeonStructure
+    /// </summary>
+    internal static class DungeonStructureConcretizer
     {
-        public static DungeonStructure ConcretizeStructure(AbstractDungeonStructure inputStructure, Random random)
+        internal static DungeonStructure ConcretizeStructure(AbstractDungeonStructure inputStructure, Random random)
         {
             var structure = new DungeonStructure(ConcretizeDungeonTree(inputStructure.StartElement, random,
                 new ReadOnlyDictionary<string, AbstractDungeonStructure>(inputStructure.EmbeddedDungeons)),
@@ -20,7 +23,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
         }
 
 
-        public static DungeonNode ConcretizeDungeonTree(AbstractDungeonElement inputElement, Random random, ReadOnlyDictionary<string, AbstractDungeonStructure> embeddedDungeons)
+        internal static DungeonNode ConcretizeDungeonTree(AbstractDungeonElement inputElement, Random random, ReadOnlyDictionary<string, AbstractDungeonStructure> embeddedDungeons)
         {
             {
                 if (inputElement is NodeElement node)
@@ -46,7 +49,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             {
                 if (inputElement is ConnectionElement connection)
                 {
-                    var connectionLength = connection.Length.GetRandom(random);
+                    var connectionLength = connection.Length.RandomNumberInRange(random);
                     DungeonNode replacementNode = null;
                     if (connection.SubElements.Count == 1)
                     {

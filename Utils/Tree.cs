@@ -3,48 +3,60 @@ using System.Collections.Generic;
 
 namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils
 {
-    public interface ITraversableTree<T>
+    /// <summary>
+    /// Interface for an abstract tree node element. Used together with the extension functions
+    /// </summary>
+    public interface ITraversableTreeNode<out T>
     {
-        IEnumerable<ITraversableTree<T>> Children { get; }
-        T Node { get; }
+        IEnumerable<ITraversableTreeNode<T>> ChildNodes { get; }
+        T Value { get; }
     }
 
+    /// <summary>
+    /// Extension methods for the ITraversableTreeNode interface
+    /// </summary>
     public static class TreeExtensions
     {
-        public static IEnumerable<T> TraverseDownToTop<T>(this ITraversableTree<T> traversableTree)
+        /// <summary>
+        /// Returns an IEnumerable of the tree elements in reverse Depth First order (takes the leaves first)
+        /// </summary>
+        public static IEnumerable<T> TraverseDepthFirstReverse<T>(this ITraversableTreeNode<T> traversableTreeNode)
         {
-            foreach (ITraversableTree<T> child in traversableTree.Children)
+            foreach (ITraversableTreeNode<T> child in traversableTreeNode.ChildNodes)
             {
-                foreach (T collectedNodes in child.TraverseDownToTop())
+                foreach (T collectedNodes in child.TraverseDepthFirstReverse())
                 {
                     yield return collectedNodes;
                 }
             }
 
-            yield return traversableTree.Node;
+            yield return traversableTreeNode.Value;
         }
 
-        public static IEnumerable<T> TraverseTopToDown<T>(this ITraversableTree<T> traversableTree)
+        /// <summary>
+        /// Returns an IEnumerable of the tree elements in Depth First order (takes the root first)
+        /// </summary>
+        public static IEnumerable<T> TraverseDepthFirst<T>(this ITraversableTreeNode<T> traversableTreeNode)
         {
-            yield return traversableTree.Node;
+            yield return traversableTreeNode.Value;
 
-            foreach (ITraversableTree<T> child in traversableTree.Children)
+            foreach (ITraversableTreeNode<T> child in traversableTreeNode.ChildNodes)
             {
-                foreach (T collectedNodes in child.TraverseTopToDown())
+                foreach (T collectedNodes in child.TraverseDepthFirst())
                 {
                     yield return collectedNodes;
                 }
             }
         }
 
-        public static void ForeachTopDownDepth<T>(this ITraversableTree<T> traversableTree, Action<T, int> action) => ForeachTopDownDepthR(traversableTree, action, 0);
+        public static void ForeachDepthFirst<T>(this ITraversableTreeNode<T> traversableTreeNode, Action<T, int> action) => ForeachDepthFirstRecursive(traversableTreeNode, action, 0);
 
-        private static void ForeachTopDownDepthR<T>(ITraversableTree<T> traversableTree, Action<T, int> action, int depth)
+        private static void ForeachDepthFirstRecursive<T>(ITraversableTreeNode<T> traversableTreeNode, Action<T, int> action, int depth)
         {
-            action(traversableTree.Node, depth);
-            foreach (ITraversableTree<T> child in traversableTree.Children)
+            action(traversableTreeNode.Value, depth);
+            foreach (ITraversableTreeNode<T> child in traversableTreeNode.ChildNodes)
             {
-                ForeachTopDownDepthR<T>(child, action, depth + 1);
+                ForeachDepthFirstRecursive(child, action, depth + 1);
             }
         }
     }

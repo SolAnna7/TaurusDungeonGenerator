@@ -7,32 +7,32 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.Component;
+using SnowFlakeGamesAssets.TaurusDungeonGenerator.GenerationHelper;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.GenerationModel;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils;
 using UnityEngine;
 using Random = System.Random;
-using Room = SnowFlakeGamesAssets.TaurusDungeonGenerator.Component.Room;
 
 namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
 {
+    /// <summary>
+    /// The main dungeon generation class
+    /// </summary>
     public class PrototypeDungeonGenerator
     {
         private BoundsOctree<RoomPrototype> _virtualSpace;
-//        private readonly List<RoomWrapper> _connactableRooms = new List<RoomWrapper>();
 
         private readonly DungeonStructure _loadedStructure;
 
         private readonly Dictionary<string, RoomCollection> _loadedRooms;
 
-        // private readonly Stack<GenerationStackItem> _connectionStack;
-
         private readonly GenerationParameters _generationParameters;
 
-        public const int _retryNum = 10;
+        private uint _retryNum = 10;
 
-        private const int maxSteps = 512;
-        private int _stepsMade;
+        private uint maxSteps = 512;
+        private uint _stepsMade;
 
         private Random _random;
         private int _seed = 0;
@@ -72,15 +72,10 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                 throw new Exception("Could not place first element!");
             }
 
-//            if (!BuildPrototypeRoomRecur(firstRoomWrapper))
-//            {
-//                throw new Exception("Dungeon could not be built!");
-//            }
-
             TryCreateDungeonStructure(firstRoomWrapper);
 
             firstRoomWrapper.ActualGraphElement.MetaData.AddTag("ROOT");
-            firstRoomWrapper.ActualGraphElement.TraverseTopToDown().ForEach(n => n.MetaData.AddTag("MAIN"));
+            firstRoomWrapper.ActualGraphElement.TraverseDepthFirst().ForEach(n => n.MetaData.AddTag("MAIN"));
 
             CreateBranches(firstRoomWrapper);
 
@@ -96,10 +91,10 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
 
         private void ParameterizeDungeon()
         {
-            int requiredTransitNum = _generationParameters.RequiredTransitNumber;
-
-            if (requiredTransitNum >= 0)
+            if (_generationParameters.RequiredTransitNumber.HasValue)
             {
+                uint requiredTransitNum = _generationParameters.RequiredTransitNumber.Value;
+
                 var maxTransitNum = _loadedStructure.NodeMetaData.SubTransitNum;
                 var minTransitNum = maxTransitNum - _loadedStructure.NodeMetaData.ChildOptionalNodes.Sum(x => x.MetaData.SubTransitNum);
 
@@ -136,13 +131,13 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             //remove not required optional nodes
             List<Tuple<DungeonNode, DungeonNode>> nodesToRemove = new List<Tuple<DungeonNode, DungeonNode>>();
 
-            foreach (var dungeonNode in _loadedStructure.StartElement.TraverseTopToDown())
+            foreach (var dungeonNode in _loadedStructure.StartElement.TraverseDepthFirst())
             {
-                foreach (var dungeonNodeChild in dungeonNode.Children)
+                foreach (var dungeonNodeChild in dungeonNode.ChildNodes)
                 {
-                    if ((dungeonNodeChild.Node.MetaData.OptionalNodeData?.Required ?? true) == false)
+                    if ((dungeonNodeChild.Value.MetaData.OptionalNodeData?.Required ?? true) == false)
                     {
-                        nodesToRemove.Add(new Tuple<DungeonNode, DungeonNode>(dungeonNode.Node, dungeonNodeChild.Node));
+                        nodesToRemove.Add(new Tuple<DungeonNode, DungeonNode>(dungeonNode.Value, dungeonNodeChild.Value));
                     }
                 }
             }
@@ -151,55 +146,16 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             {
                 tuple.Item1.RemoveSubElement(tuple.Item2);
             }
-        }
 
-        private void CreateBranches(RoomPrototype firstRoomWrapper)
-        {
-            var branchDataWrapper = _loadedStructure.NodeMetaData.BranchDataWrapper;
-
-            if (branchDataWrapper == null)
-                return;
-
-            var branchPrototypeNames = branchDataWrapper.BranchPrototypeNames;
-            var openConnections = new Stack<RoomPrototypeConnection>(CollectOpenConnections(firstRoomWrapper).Shuffle(_random));
-
-            int remainingBranchNum;
-
-            if (branchDataWrapper.BranchCount.HasValue)
-            {
-                remainingBranchNum = branchDataWrapper.BranchCount.Value;
-            }
-            else if (branchDataWrapper.BranchPercentage.HasValue)
-            {
-                remainingBranchNum = (int) (branchDataWrapper.BranchPercentage.Value * openConnections.Count / 100);
-            }
-            else return;
-
-            int extremeCntr = 100;
-
-            while (openConnections.Count > 0 && remainingBranchNum > 0 && extremeCntr > 0)
-            {
-                var selectedBranchType = branchPrototypeNames.AnyRandom(_random);
-                AbstractDungeonStructure embeddedBranchDungeon = _loadedStructure.AbstractStructure.EmbeddedDungeons[selectedBranchType];
-                DungeonNode concretizedDungeonBranch = DungeonStructureConcretizer.ConcretizeDungeonTree(embeddedBranchDungeon.StartElement, _random,
-                    new ReadOnlyDictionary<string, AbstractDungeonStructure>(_loadedStructure.AbstractStructure.EmbeddedDungeons));
-
-                var connection = openConnections.Pop();
-
-                if (GetPossibleRoomsForConnection(connection, concretizedDungeonBranch).Any(BuildPrototypeRoomRecur))
-                {
-                    remainingBranchNum--;
-                    connection.ParentRoomPrototype.ActualGraphElement.AddSubElement(concretizedDungeonBranch);
-                    concretizedDungeonBranch.TraverseTopToDown().ForEach(n => n.MetaData.AddTag("BRANCH"));
-                }
-
-                extremeCntr--;
-            }
+            if (_generationParameters.GenerationMaxDeadEnds.HasValue)
+                maxSteps = _generationParameters.GenerationMaxDeadEnds.Value;
+            if (_generationParameters.GenerationRetryNum.HasValue)
+                _retryNum = _generationParameters.GenerationRetryNum.Value;
         }
 
         private void TryCreateDungeonStructure(RoomPrototype firstRoomWrapper)
         {
-            int i = _retryNum;
+            uint i = _retryNum;
             do
             {
                 try
@@ -231,6 +187,50 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             } while (i > 0);
 
             throw new Exception("Dungeon building failed!");
+        }
+
+        private void CreateBranches(RoomPrototype firstRoomWrapper)
+        {
+            var branchDataWrapper = _loadedStructure.NodeMetaData.BranchDataWrapper;
+
+            if (branchDataWrapper == null)
+                return;
+
+            var branchPrototypeNames = branchDataWrapper.BranchPrototypeNames;
+            var openConnections = new Stack<RoomPrototypeConnection>(CollectOpenConnections(firstRoomWrapper).Shuffle(_random));
+
+            int remainingBranchNum;
+
+            if (branchDataWrapper.BranchCount.HasValue)
+            {
+                remainingBranchNum = branchDataWrapper.BranchCount.Value;
+            }
+            else if (branchDataWrapper.BranchPercentage.HasValue)
+            {
+                remainingBranchNum = (int) (branchDataWrapper.BranchPercentage.Value * openConnections.Count / 100);
+            }
+            else return;
+
+            int extremeCntr = 100;
+
+            while (openConnections.Count > 0 && remainingBranchNum > 0 && extremeCntr > 0)
+            {
+                var selectedBranchType = branchPrototypeNames.GetRandomElement(_random);
+                AbstractDungeonStructure embeddedBranchDungeon = _loadedStructure.AbstractStructure.EmbeddedDungeons[selectedBranchType];
+                DungeonNode concretizedDungeonBranch = DungeonStructureConcretizer.ConcretizeDungeonTree(embeddedBranchDungeon.StartElement, _random,
+                    new ReadOnlyDictionary<string, AbstractDungeonStructure>(_loadedStructure.AbstractStructure.EmbeddedDungeons));
+
+                var connection = openConnections.Pop();
+
+                if (GetPossibleRoomsForConnection(connection, concretizedDungeonBranch).Any(BuildPrototypeRoomRecur))
+                {
+                    remainingBranchNum--;
+                    connection.ParentRoomPrototype.ActualGraphElement.AddSubElement(concretizedDungeonBranch);
+                    concretizedDungeonBranch.TraverseDepthFirst().ForEach(n => n.MetaData.AddTag("BRANCH"));
+                }
+
+                extremeCntr--;
+            }
         }
 
         private bool BuildPrototypeRoomRecur(RoomPrototype room)
@@ -445,7 +445,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             return result;
         }
 
-        private void CollectOpenConnectionsRecursively(RoomPrototype roomPrototype, List<RoomPrototypeConnection> resultCollector)
+        private static void CollectOpenConnectionsRecursively(RoomPrototype roomPrototype, List<RoomPrototypeConnection> resultCollector)
         {
             foreach (var childRoomConnection in roomPrototype.ChildRoomConnections)
             {
@@ -467,26 +467,12 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
         /// <inheritdoc />
         private class MaxStepsReachedException : Exception
         {
-            public MaxStepsReachedException(int stepNum) : base($"Generation took too many steps {stepNum}")
+            public MaxStepsReachedException(uint stepNum) : base($"Generation took too many steps {stepNum}")
             {
             }
         }
 
-        // private struct GenerationStackItem
-        // {
-        //     public GenerationStackItem(RoomPrototypeConnection connection, DungeonNode node)
-        //     {
-        //         Connection = connection;
-        //         Node = node;
-        //         Rooms = null;
-        //     }
-        //
-        //     public RoomPrototypeConnection Connection;
-        //     public DungeonNode Node;
-        //     public Stack<Room> Rooms;
-        // }
-
-        public static void CollectMetaData(DungeonStructure dungeonStructure, Dictionary<string, RoomCollection> roomsByPath)
+        private static void CollectMetaData(DungeonStructure dungeonStructure, Dictionary<string, RoomCollection> roomsByPath)
         {
             CollectMetaData(dungeonStructure.StartElement, roomsByPath);
         }
@@ -505,9 +491,26 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             return dungeonElement.MetaData;
         }
 
+        /// <summary>
+        /// Extra dungeon generation settings
+        /// </summary>
         public class GenerationParameters
         {
-            public int RequiredTransitNumber { get; set; } = -1;
+            /// <summary>
+            /// The number of transits this dungeon should built with
+            /// Unset if null
+            /// </summary>
+            public uint? RequiredTransitNumber { get; set; } = null;
+
+            /// <summary>
+            /// If the generation fails with the initial seed, the generation process will be retried this many times with a new seed (calculated from the original one)
+            /// </summary>
+            public uint? GenerationRetryNum { get; set; }
+
+            /// <summary>
+            /// The maximum number of dead end back steps before failing the generation
+            /// </summary>
+            public uint? GenerationMaxDeadEnds { get; set; }
         }
     }
 }

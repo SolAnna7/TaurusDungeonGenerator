@@ -27,7 +27,7 @@ namespace TaurusDungeonGenerator.Example.Scripts
                 {
                     Transform objectHit = hit.transform;
 
-                    string text = DungeonDebugger.GetSummaryTextForObject(objectHit.gameObject);
+                    string text = DungeonDebugger.TryGetSummaryTextForObject(objectHit.gameObject);
 
                     if (text != null)
                     {

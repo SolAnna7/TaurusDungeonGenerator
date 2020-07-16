@@ -22,7 +22,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         public Dictionary<string, AbstractDungeonStructure> EmbeddedDungeons { get; set; } = new Dictionary<string, AbstractDungeonStructure>();
 
         /// <summary>
-        /// Data about the branches(extra optional parts) of the dungeon
+        /// Data about the branches (optional extra paths) of the dungeon
         /// </summary>
         public BranchDataWrapper BranchDataWrapper { get; set; }
 
@@ -64,21 +64,27 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
     /// <summary>
     /// The abstract base class of elements
     /// </summary>
-    public abstract class AbstractDungeonElement
+    public abstract class AbstractDungeonElement : ITraversableTreeNode<AbstractDungeonElement>
     {
         /// <summary>
         /// The type of rooms this element could be built of. A file path to a RoomCollection
         /// </summary>
         public string Style { get; }
 
+        /// <summary>
+        /// Child elements
+        /// </summary>
         public List<AbstractDungeonElement> SubElements => _subElements;
 
         // ReSharper disable once InconsistentNaming
         protected List<AbstractDungeonElement> _subElements = new List<AbstractDungeonElement>();
 
+        /// <summary>
+        /// Meta data of the element
+        /// </summary>
         public NodeMetaData ElementMetaData { get; set; }
 
-        public bool IsOptional { get; set; } = false;
+        [Obsolete] public bool IsOptional { get; set; } = false;
         [Obsolete] public bool IsTansit { get; set; } = false;
 
         protected AbstractDungeonElement()
@@ -97,6 +103,8 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         }
 
         public void AddSubElement(AbstractDungeonElement newSub) => _subElements.Add(newSub);
+        public IEnumerable<ITraversableTreeNode<AbstractDungeonElement>> ChildNodes => _subElements;
+        public AbstractDungeonElement Value => this;
     }
 
 
@@ -156,7 +164,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         public NestedDungeon(string path, NodeMetaData elementMetaData, params AbstractDungeonElement[] subElements)
         {
             Path = path;
-            this._subElements = new List<AbstractDungeonElement>(subElements);
+            _subElements = new List<AbstractDungeonElement>(subElements);
             ElementMetaData = elementMetaData;
         }
     }

@@ -4,25 +4,32 @@ using SnowFlakeGamesAssets.TaurusDungeonGenerator.Component;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.GenerationModel;
 using UnityEngine;
 using Object = UnityEngine.Object;
-using Room = SnowFlakeGamesAssets.TaurusDungeonGenerator.Component.Room;
 
 namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
 {
+    /// <summary>
+    /// End product as a dungeon prototype generation process. Only exists in its own space, no room is instantiated yet.
+    /// </summary>
     public class PrototypeDungeon
     {
-        private RoomPrototype _firstRoom;
-        private DungeonStructure _structure;
+        private readonly RoomPrototype _firstRoom;
+        public DungeonStructure Structure { get; }
 
         internal PrototypeDungeon(RoomPrototype firstRoom, DungeonStructure structure)
         {
-            _structure = structure;
+            Structure = structure;
             _firstRoom = firstRoom;
         }
 
+        /// <summary>
+        /// Instantiates the dungeon in unity game space
+        /// </summary>
+        /// <param name="parent">The parent Transform of the dungeon</param>
+        /// <returns>The structure this prototype</returns>
         public DungeonStructure BuildDungeonInUnitySpace(Transform parent)
         {
             BuildDungeonInUnitySpaceRecur(_firstRoom, parent);
-            return _structure;
+            return Structure;
         }
 
         private static Room BuildDungeonInUnitySpaceRecur(RoomPrototype actualElement, Transform parent)
@@ -37,8 +44,6 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
                 var parentConn = instantiatedRoom.GetConnections().Single(c =>
                     c.name == prototypeConnection.ParentConnection.name &&
                     c.transform.localPosition == prototypeConnection.ParentConnection.transform.localPosition);
-
-//                var x = PrefabUtility.GetCorrespondingObjectFromSource(instantiatedRoom.GetConnections().ToList()[0]);
 
                 if (prototypeConnection.State == PrototypeConnectionState.CONNECTED)
                 {
@@ -119,10 +124,9 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         {
             if (conn.removeOriginal)
             {
-                // Object.Destroy(conn.gameObject);
                 foreach (Transform child in conn.transform)
                 {
-                    GameObject.Destroy(child.gameObject);
+                    Object.Destroy(child.gameObject);
                 }
             }
         }
