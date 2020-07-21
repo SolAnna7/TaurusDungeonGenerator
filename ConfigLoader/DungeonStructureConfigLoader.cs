@@ -40,7 +40,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
             if (branchData != null)
                 nestedDungeonNameCollector.UnionWith(branchData.BranchPrototypeNames);
 
-            var inlineDungeons = dungeonStructureBaseNode.TryQuery("inline-nested");
+            var inlineDungeons = dungeonStructureBaseNode.TryQuery(INLINE_NESTED);
             if (inlineDungeons.IsPresent)
             {
                 var inlineNode = inlineDungeons.Get().AsNode();
@@ -176,7 +176,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
                 new PropertyAndTagHolder()
                     .Also(p => ReadTags(config).ForEach(p.AddTag)));
 
-            metaData.IsTransit = config.TryQuery(TRANSIT).IsPresent;
+            metaData.OptionalEndpoint = config.TryQuery(OPTIONAL_ENDPOINT).IsPresent;
             if (config.TryQuery(OPTIONAL).IsPresent)
                 metaData.OptionalNodeData = new OptionalNodeData {Required = true};
 

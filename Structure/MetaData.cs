@@ -12,10 +12,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
     {
         public BranchDataWrapper BranchDataWrapper { get; set; }
 
-        [Obsolete] public bool IsTransit { get; set; } = false;
-
-        //includes this node if it is a transit
-        [Obsolete] public int SubTransitNum { get; set; } = 0;
+        public bool OptionalEndpoint { get; set; } = false;
         
         public List<DungeonNode> ChildOptionalNodes { get; set; } = new List<DungeonNode>();
 
@@ -32,10 +29,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
             }
         }
 
-        public static NodeMetaData Empty()
-        {
-            return new NodeMetaData();
-        }
+        public static NodeMetaData Empty => new NodeMetaData();
 
         #region Tag and property data
 
@@ -69,8 +63,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         {
             var clone = new NodeMetaData((BranchDataWrapper) BranchDataWrapper?.Clone(), (PropertyAndTagHolder) _tagAndPropertyHolder.Clone());
             clone.OptionalNodeData = (OptionalNodeData) OptionalNodeData?.Clone();
-            clone.IsTransit = IsTransit;
-            clone.SubTransitNum = SubTransitNum;
+            clone.OptionalEndpoint = OptionalEndpoint;
             clone.ChildOptionalNodes = ChildOptionalNodes.ToList();
             return clone;
         }
@@ -104,7 +97,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
             GlobalNodePropertyAndTagHolder = globalNodePropertyAndTagHolder ?? new PropertyAndTagHolder();
         }
 
-        public static StructureMetaData Empty() => new StructureMetaData();
+        public static StructureMetaData Empty => new StructureMetaData();
 
         #region Tag and property data
 

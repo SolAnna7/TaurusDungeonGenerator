@@ -87,22 +87,22 @@
           length: 5_10
           subs:
             - node: DungeonGenerationTest/EndRoom
-              transit: true
+              optional-end: true
         - connection: DungeonGenerationTest/Corridors
           optional: true
           length: 5
           subs:
             - node: DungeonGenerationTest/EndRoom
-              transit: true
+              optional-end: true
         - connection: DungeonGenerationTest/Corridors
           optional: true
           length: 5_10
           subs:
             - node: DungeonGenerationTest/EndRoom
-              transit: true
+              optional-end: true
         - connection: DungeonGenerationTest/Corridors
           optional: true
           length: 3_4
           subs:
             - node: DungeonGenerationTest/EndRoom
-              transit: true
+              optional-end: true

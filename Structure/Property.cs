@@ -12,7 +12,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
     {
         object GetProperty(string key);
         /// <summary>
-        /// Returns property caster to type T
+        /// Returns property casted to type T
         /// </summary>
         /// <param name="key">The key of the property</param>
         /// <typeparam name="T">The type to cast</typeparam>

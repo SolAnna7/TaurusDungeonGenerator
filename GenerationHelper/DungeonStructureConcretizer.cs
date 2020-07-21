@@ -41,7 +41,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                         copyNode.MetaData.OptionalNodeData = new OptionalNodeData();
 
                     if (node.IsTansit)
-                        copyNode.MetaData.IsTransit = true;
+                        copyNode.MetaData.OptionalEndpoint = true;
 
                     return copyNode;
                 }
@@ -71,7 +71,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                         replacementNode.MetaData.OptionalNodeData = new OptionalNodeData();
 
                     if (connection.IsTansit)
-                        replacementNode.MetaData.IsTransit = true;
+                        replacementNode.MetaData.OptionalEndpoint = true;
 
                     return replacementNode;
                 }
@@ -100,7 +100,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                         nestedStartNode.MetaData.OptionalNodeData = new OptionalNodeData();
 
                     if (nested.IsTansit)
-                        nestedStartNode.MetaData.IsTransit = true;
+                        nestedStartNode.MetaData.OptionalEndpoint = true;
 
                     return nestedStartNode;
                 }

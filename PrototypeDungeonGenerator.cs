@@ -47,7 +47,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             _loadedStructure = DungeonStructureConcretizer.ConcretizeStructure(structure, _random);
             _loadedRooms = RoomResourceLoader.LoadRoomPrototypes(_loadedStructure);
             _marginHalf = structure.StructureMetaData.MarginUnit / 2f;
-            CollectMetaData(_loadedStructure, _loadedRooms);
+            CollectMetaData(_loadedStructure);
 
             if (_generationParameters != null)
                 ParameterizeDungeon();
@@ -91,44 +91,58 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
 
         private void ParameterizeDungeon()
         {
-            if (_generationParameters.RequiredTransitNumber.HasValue)
+            if (_generationParameters.RequiredOptionalEndpointNumber.HasValue)
+                PrepareOptionalRoutes();
+
+            if (_generationParameters.GenerationMaxDeadEnds.HasValue)
+                maxSteps = _generationParameters.GenerationMaxDeadEnds.Value;
+            if (_generationParameters.GenerationRetryNum.HasValue)
+                _retryNum = _generationParameters.GenerationRetryNum.Value;
+        }
+
+        private void PrepareOptionalRoutes()
+        {
+            System.Diagnostics.Debug.Assert(_generationParameters.RequiredOptionalEndpointNumber != null, "_generationParameters.RequiredOptionalEndpointNumber != null");
+            uint requiredEndpointNum = _generationParameters.RequiredOptionalEndpointNumber.Value;
+
+            var maxEndpointNum = GetGenMetaData(_loadedStructure.NodeMetaData).OptionalEndpointNum;
+            var minEndpointNum = maxEndpointNum - _loadedStructure.NodeMetaData.ChildOptionalNodes.Sum(x => GetGenMetaData(x.MetaData).OptionalEndpointNum);
+
+            if (maxEndpointNum < requiredEndpointNum)
             {
-                uint requiredTransitNum = _generationParameters.RequiredTransitNumber.Value;
+                throw new Exception($"Dungeon cannot be built with parameters. RequiredOptionalEndpointNum({requiredEndpointNum}) > MaxEndpointNum({maxEndpointNum})");
+            }
 
-                var maxTransitNum = _loadedStructure.NodeMetaData.SubTransitNum;
-                var minTransitNum = maxTransitNum - _loadedStructure.NodeMetaData.ChildOptionalNodes.Sum(x => x.MetaData.SubTransitNum);
+            if (minEndpointNum > requiredEndpointNum)
+            {
+                throw new Exception($"Dungeon cannot be built with parameters. RequiredOptionalEndpointNum({requiredEndpointNum}) > MinEndpointNum({maxEndpointNum})");
+            }
 
-                if (maxTransitNum < requiredTransitNum)
+            var remainingOptionalsToDisable = maxEndpointNum - (requiredEndpointNum - minEndpointNum);
+
+            //todo: this algorithm will not work with multiple level options, only top level
+            var topLevelOptionalNodes = _loadedStructure.NodeMetaData.ChildOptionalNodes.ToList().OrderByDescending(x => GetGenMetaData(x.MetaData).OptionalEndpointNum).ToList();
+
+            foreach (var optionalNode in topLevelOptionalNodes)
+            {
+                if (remainingOptionalsToDisable > 0 && GetGenMetaData(optionalNode.MetaData).OptionalEndpointNum <= remainingOptionalsToDisable)
                 {
-                    throw new Exception($"Dungeon cannot be built with parameters. RequiredTransitNum({requiredTransitNum}) > MaxTransitNum({maxTransitNum})");
-                }
-
-                if (minTransitNum > requiredTransitNum)
-                {
-                    throw new Exception($"Dungeon cannot be built with parameters. RequiredTransitNum({requiredTransitNum}) > MinTransitNum({maxTransitNum})");
-                }
-
-                var remainingOptionalsToDisable = maxTransitNum - (requiredTransitNum - minTransitNum);
-
-                //todo: this algorithm will not work with multiple level options, only top level
-                var topLevelOptionalNodes = _loadedStructure.NodeMetaData.ChildOptionalNodes.ToList().OrderByDescending(x => x.MetaData.SubTransitNum).ToList();
-
-                foreach (var optionalNode in topLevelOptionalNodes)
-                {
-                    if (remainingOptionalsToDisable > 0 && optionalNode.MetaData.SubTransitNum <= remainingOptionalsToDisable)
-                    {
-                        optionalNode.MetaData.OptionalNodeData.Required = false;
-                        remainingOptionalsToDisable -= optionalNode.MetaData.SubTransitNum;
-                    }
-                }
-
-                if (remainingOptionalsToDisable != 0)
-                {
-                    throw new Exception("Dungeon cannot be built with parameters. Optional structure cannot be optimized.");
+                    optionalNode.MetaData.OptionalNodeData.Required = false;
+                    remainingOptionalsToDisable -= GetGenMetaData(optionalNode.MetaData).OptionalEndpointNum;
                 }
             }
 
+            if (remainingOptionalsToDisable != 0)
+            {
+                throw new Exception("Dungeon cannot be built with parameters. Optional structure cannot be optimized.");
+            }
+
             //remove not required optional nodes
+            RemoveUnneededOptionals();
+        }
+
+        private void RemoveUnneededOptionals()
+        {
             List<Tuple<DungeonNode, DungeonNode>> nodesToRemove = new List<Tuple<DungeonNode, DungeonNode>>();
 
             foreach (var dungeonNode in _loadedStructure.StartElement.TraverseDepthFirst())
@@ -146,11 +160,6 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             {
                 tuple.Item1.RemoveSubElement(tuple.Item2);
             }
-
-            if (_generationParameters.GenerationMaxDeadEnds.HasValue)
-                maxSteps = _generationParameters.GenerationMaxDeadEnds.Value;
-            if (_generationParameters.GenerationRetryNum.HasValue)
-                _retryNum = _generationParameters.GenerationRetryNum.Value;
         }
 
         private void TryCreateDungeonStructure(RoomPrototype firstRoomWrapper)
@@ -472,23 +481,38 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             }
         }
 
-        private static void CollectMetaData(DungeonStructure dungeonStructure, Dictionary<string, RoomCollection> roomsByPath)
+        private static void CollectMetaData(DungeonStructure dungeonStructure)
         {
-            CollectMetaData(dungeonStructure.StartElement, roomsByPath);
+            CollectMetaData(dungeonStructure.StartElement);
         }
 
-        private static NodeMetaData CollectMetaData(DungeonNode dungeonElement, Dictionary<string, RoomCollection> roomsByPath)
+        private static NodeMetaData CollectMetaData(DungeonNode dungeonElement)
         {
-            IList<NodeMetaData> subMetaDataList = dungeonElement.SubElements.Select(s => CollectMetaData(s, roomsByPath)).ToList();
+            IList<NodeMetaData> subMetaDataList = dungeonElement.SubElements.Select(CollectMetaData).ToList();
 
-            dungeonElement.MetaData.SubTransitNum = subMetaDataList.Aggregate(dungeonElement.MetaData.IsTransit ? 1 : 0, (sum, e) => sum + e.SubTransitNum);
+            GetGenMetaData(dungeonElement.MetaData).OptionalEndpointNum =
+                subMetaDataList.Aggregate(dungeonElement.MetaData.OptionalEndpoint ? 1 : 0, (sum, e) => sum + GetGenMetaData(e).OptionalEndpointNum);
             dungeonElement.MetaData.ChildOptionalNodes = dungeonElement.SubElements.SelectMany(e =>
             {
                 var m = e.MetaData;
                 return m.OptionalNodeData != null ? new List<DungeonNode> {e} : m.ChildOptionalNodes;
             }).ToList();
-
             return dungeonElement.MetaData;
+        }
+
+        private class GenerationMetaData
+        {
+            public int OptionalEndpointNum { get; set; } = 0;
+        }
+
+        private static GenerationMetaData GetGenMetaData(IPropertyHolder holder)
+        {
+            if (!holder.HasProperty("#GENERATION_META_DATA"))
+            {
+                holder.AddProperty("#GENERATION_META_DATA", new GenerationMetaData());
+            }
+
+            return holder.GetPropertyAs<GenerationMetaData>("#GENERATION_META_DATA");
         }
 
         /// <summary>
@@ -497,10 +521,12 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
         public class GenerationParameters
         {
             /// <summary>
-            /// The number of transits this dungeon should built with
+            /// The number of optional endpoints this dungeon should built with
             /// Unset if null
             /// </summary>
-            public uint? RequiredTransitNumber { get; set; } = null;
+            public uint? RequiredOptionalEndpointNumber { get; set; } = null;
+
+            public Dictionary<string, int> RequiredOptionals { get; set; } = null;
 
             /// <summary>
             /// If the generation fails with the initial seed, the generation process will be retried this many times with a new seed (calculated from the original one)

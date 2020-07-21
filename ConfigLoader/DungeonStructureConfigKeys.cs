@@ -21,7 +21,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
         internal static string LENGTH => "length";
         internal static string NESTED => "nested";
         internal static string TAGS => "tags";
-        internal static string TRANSIT => "transit";
+        internal static string OPTIONAL_ENDPOINT => "optional-end";
         internal static string OPTIONAL => "optional";
     }
 }

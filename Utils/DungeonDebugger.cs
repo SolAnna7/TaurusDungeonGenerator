@@ -75,7 +75,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils
         private static Color ElementColorBasedOnPath(DungeonNode node, int depth)
         {
             bool isBranch = node.MetaData.GetTags().Contains("BRANCH");
-            bool isTransit = node.MetaData.IsTransit;
+            bool isEndpoint = node.MetaData.OptionalEndpoint;
             bool isStart = depth == 0;
 
             float intensity = (float) (0.7 + 0.3 * Math.Sin(depth / Math.PI + 5));
@@ -83,7 +83,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils
             Color color = new Color(
                 isStart || isBranch ? intensity : 0,
                 isStart || !isBranch ? intensity : 0,
-                isStart || isTransit ? intensity : 0, 0.95f);
+                isStart || isEndpoint ? intensity : 0, 0.95f);
             return color;
         }
 
