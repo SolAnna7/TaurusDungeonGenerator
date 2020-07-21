@@ -33,7 +33,7 @@
                       subs:
                         - node: DungeonGenerationTest/VerticalRoom
                           subs:
-                            - nested: nested-test
+                            - nested: dungeons.nested-test
                               subs:
                                 - connection: DungeonGenerationTest/Corridors
                                   length: 1_3
