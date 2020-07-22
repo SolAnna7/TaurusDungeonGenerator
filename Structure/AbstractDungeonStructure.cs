@@ -66,7 +66,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         private uint RecalculateMinEndpointNum(AbstractDungeonElement element)
         {
             uint res = 0;
-            if (element.ElementMetaData.OptionalNodeData != null)
+            if (element.ElementMetaData.OptionalNode)
                 return res;
             if (element.ElementMetaData.OptionalEndpoint)
                 res++;

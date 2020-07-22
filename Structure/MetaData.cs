@@ -13,11 +13,10 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         public BranchDataWrapper BranchDataWrapper { get; set; }
 
         public bool OptionalEndpoint { get; set; } = false;
+        public bool OptionalNode { get; set; } = false;
 
         public List<DungeonNode> ChildOptionalNodes { get; set; } = new List<DungeonNode>();
-
-        public OptionalNodeData OptionalNodeData = null;
-
+        
         public NodeMetaData(BranchDataWrapper branchDataWrapper = null, PropertyAndTagHolder holder = null)
         {
             BranchDataWrapper = branchDataWrapper;
@@ -63,21 +62,10 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         public object Clone()
         {
             var clone = new NodeMetaData((BranchDataWrapper) BranchDataWrapper?.Clone(), (PropertyAndTagHolder) _tagAndPropertyHolder.Clone());
-            clone.OptionalNodeData = (OptionalNodeData) OptionalNodeData?.Clone();
+            clone.OptionalNode =  OptionalNode;
             clone.OptionalEndpoint = OptionalEndpoint;
             clone.ChildOptionalNodes = ChildOptionalNodes.ToList();
             return clone;
-        }
-    }
-
-    public class OptionalNodeData : ICloneable
-    {
-        public bool Required { get; set; } = true;
-
-
-        public object Clone()
-        {
-            return MemberwiseClone();
         }
     }
 

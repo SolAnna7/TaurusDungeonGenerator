@@ -196,8 +196,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
                     .Also(p => ReadTags(config).ForEach(p.AddTag)));
 
             metaData.OptionalEndpoint = config.TryQuery(OPTIONAL_ENDPOINT).IsPresent;
-            if (config.TryQuery(OPTIONAL).IsPresent)
-                metaData.OptionalNodeData = new OptionalNodeData {Required = true};
+            metaData.OptionalNode = config.TryQuery(OPTIONAL).IsPresent;
 
             return metaData;
         }

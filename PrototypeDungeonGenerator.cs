@@ -127,7 +127,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             {
                 if (remainingOptionalsToDisable > 0 && GetGenMetaData(optionalNode.MetaData).OptionalEndpointNum <= remainingOptionalsToDisable)
                 {
-                    optionalNode.MetaData.OptionalNodeData.Required = false;
+                    GetGenMetaData(optionalNode.MetaData).NodeRequired = false;
                     remainingOptionalsToDisable -= GetGenMetaData(optionalNode.MetaData).OptionalEndpointNum;
                 }
             }
@@ -149,7 +149,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             {
                 foreach (var dungeonNodeChild in dungeonNode.ChildNodes)
                 {
-                    if ((dungeonNodeChild.Value.MetaData.OptionalNodeData?.Required ?? true) == false)
+                    if (!GetGenMetaData(dungeonNodeChild.Value.MetaData).NodeRequired)
                     {
                         nodesToRemove.Add(new Tuple<DungeonNode, DungeonNode>(dungeonNode.Value, dungeonNodeChild.Value));
                     }
@@ -252,7 +252,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             if (actualGraphElement.IsEndNode)
                 return true;
 
-            var subElements = actualGraphElement.SubElements.Where(sub => sub.MetaData.OptionalNodeData?.Required ?? true).ToList();
+            var subElements = actualGraphElement.SubElements.Where(sub => GetGenMetaData(sub.MetaData).NodeRequired).ToList();
             for (int connectionsToMake = subElements.Count; connectionsToMake > 0; connectionsToMake--)
             {
                 IList<RoomPrototypeConnection> availableConnections = room.ChildRoomConnections
@@ -495,7 +495,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             dungeonElement.MetaData.ChildOptionalNodes = dungeonElement.SubElements.SelectMany(e =>
             {
                 var m = e.MetaData;
-                return m.OptionalNodeData != null ? new List<DungeonNode> {e} : m.ChildOptionalNodes;
+                return m.OptionalNode ? new List<DungeonNode> {e} : m.ChildOptionalNodes;
             }).ToList();
             return dungeonElement.MetaData;
         }
@@ -503,6 +503,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
         private class GenerationMetaData
         {
             public int OptionalEndpointNum { get; set; } = 0;
+            public bool NodeRequired { get; set; } = true;
         }
 
         private static GenerationMetaData GetGenMetaData(IPropertyHolder holder)

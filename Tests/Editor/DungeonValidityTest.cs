@@ -53,11 +53,11 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Tests
             int seed = 123;
             var structure = new AbstractDungeonStructure(
                 new NodeElement("DungeonGenerationTest/CorrX", NodeMetaData.Empty,
-                    new ConnectionElement("DungeonGenerationTest/Corridors", new NodeMetaData {OptionalNodeData = new OptionalNodeData {Required = true}}, new RangeI(5, 10),
+                    new ConnectionElement("DungeonGenerationTest/Corridors", new NodeMetaData {OptionalNode = true}, new RangeI(5, 10),
                         new NodeElement("DungeonGenerationTest/EndRoom", new NodeMetaData().Also(m => m.OptionalEndpoint = true))),
-                    new ConnectionElement("DungeonGenerationTest/Corridors", new NodeMetaData {OptionalNodeData = new OptionalNodeData {Required = true}}, new RangeI(5),
+                    new ConnectionElement("DungeonGenerationTest/Corridors", new NodeMetaData {OptionalNode = true}, new RangeI(5),
                         new NodeElement("DungeonGenerationTest/EndRoom", new NodeMetaData().Also(m => m.OptionalEndpoint = true))),
-                    new ConnectionElement("DungeonGenerationTest/Corridors", new NodeMetaData {OptionalNodeData = new OptionalNodeData {Required = true}}, new RangeI(5, 10),
+                    new ConnectionElement("DungeonGenerationTest/Corridors", new NodeMetaData {OptionalNode = true}, new RangeI(5, 10),
                         new NodeElement("DungeonGenerationTest/EndRoom", new NodeMetaData().Also(m => m.OptionalEndpoint = true)))
                 ), StructureMetaData.Empty);
             structure.ValidateStructure();
