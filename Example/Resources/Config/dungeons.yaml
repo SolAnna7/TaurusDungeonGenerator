@@ -18,6 +18,9 @@
               
 
   graph-test:
+    structure-properties:
+      name: "Cross 1"
+      description: "valami description"
     start-node:
       node: DungeonGenerationTest/EndRoom
       subs:
@@ -59,8 +62,8 @@
 
   graph-test-2:
     global-node-tags:
-      - aaa123
-      - bbb987
+      - global-node-tag-1
+      - global-node-tag-2
     inline-nested:
       branch-test:
         start-node:
@@ -77,7 +80,6 @@
     branch-prototypes:
       - branch-test
       - branch-test-2
-    #    branch-max-num: 10
     branch-max-percent: 100
     start-node:
       node: DungeonGenerationTest/CorrX

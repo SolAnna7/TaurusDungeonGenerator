@@ -11,6 +11,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
         internal static string INLINE_NESTED => "inline-nested";
         internal static string GLOBAL_NODE_TAGS => "global-node-tags";
         internal static string STRUCTURE_TAGS => "structure-tags";
+        internal static string STRUCTURE_PROPERTIES => "structure-properties";
         internal static string MARGIN_UNIT => "margin-unit";
         internal static string BRANCH_MAX_NUM => "branch-max-num";
         internal static string BRANCH_PROTOTYPES => "branch-prototypes";

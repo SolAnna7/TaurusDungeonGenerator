@@ -7,6 +7,7 @@ using SnowFlakeGamesAssets.PiscesConfigLoader;
 using SnowFlakeGamesAssets.PiscesConfigLoader.Structure;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils;
+using UnityEngine;
 using static SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader.DungeonStructureConfigKeys;
 
 namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
@@ -17,6 +18,10 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
     /// </summary>
     public static class DungeonStructureConfigLoader
     {
+        private static readonly Dictionary<string, Func<QueryResult, object>> PropertyLoaders = new Dictionary<string, Func<QueryResult, object>>();
+
+        public static void RegisterPropertyLoader(string propertyKey, Func<QueryResult, object> loadingFunc) => PropertyLoaders.Add(propertyKey, loadingFunc);
+
         /// <summary>
         /// Loads the dungeon from the specified config path 
         /// Requires the GameConfig to be initiated
@@ -81,6 +86,20 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
                 .TryQuery(STRUCTURE_TAGS)
                 .IfPresentGet(tagsNode => tagsNode.AsNodeList().Select(tagNode => tagNode.AsString()),
                     new HashSet<string>()).ForEach(structureTags.AddTag);
+
+            dungeonStructureBaseNode.TryQuery(STRUCTURE_PROPERTIES).IfPresent(
+                propertiesNode => propertiesNode.AsNode().GetKeys().ForEach(
+                    propertyKey =>
+                    {
+                        if (PropertyLoaders.ContainsKey(propertyKey))
+                        {
+                            structureTags.AddProperty(propertyKey, PropertyLoaders[propertyKey](propertiesNode.AsNode().Query(propertyKey)));
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"PropertyLoader not found for property key: {propertyKey}");
+                        }
+                    }));
 
             float marginUnit = dungeonStructureBaseNode.TryQuery(MARGIN_UNIT).IfPresentGet(x => x.AsFloat(), 0);
 
@@ -183,7 +202,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
             return metaData;
         }
 
-        private static RangeI ToTaurusRange(this PiscesConfigLoader.Utils.RangeI source) => new RangeI(source.Min,source.Max);
+        private static RangeI ToTaurusRange(this PiscesConfigLoader.Utils.RangeI source) => new RangeI(source.Min, source.Max);
     }
 }
 #endif

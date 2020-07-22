@@ -23,6 +23,9 @@ namespace TaurusDungeonGenerator.Example.Scripts
         public Slider branchSlider;
         public Slider marginSlider;
         public Text marginText;
+        public Slider optionalSlider;
+        public Text optionalText;
+        public Text descriptionText;
 
         private DungeonStructure _actualStructure;
 
@@ -32,7 +35,9 @@ namespace TaurusDungeonGenerator.Example.Scripts
         {
             structureDropdown.ClearOptions();
             _dungeonStructures = LoadStructure();
-            structureDropdown.AddOptions(_dungeonStructures.Keys.ToList());
+            structureDropdown.AddOptions(_dungeonStructures.Select(x =>
+                    x.Value.StructureMetaData.StructurePropertyAndTagHolder.TryGetPropertyAs("name", out string structureName) ? structureName : x.Key).ToList()
+            );
             ReBuildDungeonFromSeed();
         }
 
@@ -43,8 +48,11 @@ namespace TaurusDungeonGenerator.Example.Scripts
             gameObject.AddComponent<ConfigReaderComponent>();
             GameConfig.InitConfig();
 
+            DungeonStructureConfigLoader.RegisterPropertyLoader("description", queryResult => queryResult.AsString());
+            DungeonStructureConfigLoader.RegisterPropertyLoader("name", queryResult => queryResult.AsString());
+
             GameConfig.Query("dungeons").AsNode().GetKeys()
-                .Select(key => (key, DungeonStructureConfigLoader.BuildFromConfig(new ConfigPath("dungeons",key))))
+                .Select(key => (key, DungeonStructureConfigLoader.BuildFromConfig(new ConfigPath("dungeons", key))))
                 .Where(x => !x.Item2.StructureMetaData.HasTag("NESTED_ONLY"))
                 .ForEach(k => result.Add(k.key, k.Item2));
             return result;
@@ -78,7 +86,24 @@ namespace TaurusDungeonGenerator.Example.Scripts
                 Destroy(child.gameObject);
 
             // ReSharper disable once Unity.NoNullPropagation
-            BuildDungeon(GetSelectedStructure(), seedText?.text?.GetHashCode() ?? 0, GetBranchPercent(), GetMargin());
+            var selectedStructure = GetSelectedStructure();
+
+            var structureMetaData = selectedStructure.StructureMetaData;
+            descriptionText.text = structureMetaData.TryGetPropertyAs("description", out string desc) ? desc : "";
+            if (optionalSlider.minValue != structureMetaData.MinOptionalEndpointNum || optionalSlider.maxValue != structureMetaData.MaxOptionalEndpointNum)
+            {
+                optionalSlider.minValue = structureMetaData.MinOptionalEndpointNum;
+                optionalSlider.maxValue = structureMetaData.MaxOptionalEndpointNum;
+                optionalSlider.value = optionalSlider.maxValue;
+            }
+
+            optionalText.text = $"{optionalSlider.minValue}/{optionalSlider.value}/{optionalSlider.maxValue}";
+
+            BuildDungeon(selectedStructure, seedText?.text?.GetHashCode() ?? 0, GetBranchPercent(), GetMargin(),
+                new PrototypeDungeonGenerator.GenerationParameters
+                {
+                    RequiredOptionalEndpointNumber = (uint) optionalSlider.value
+                });
         }
 
         private float GetMargin()
@@ -101,14 +126,19 @@ namespace TaurusDungeonGenerator.Example.Scripts
             return branchSlider?.value ?? 50;
         }
 
-        private void BuildDungeon(AbstractDungeonStructure structure, int generationSeed, float branchPercent, float margin)
+        private void BuildDungeon(
+            AbstractDungeonStructure structure,
+            int generationSeed,
+            float branchPercent,
+            float margin,
+            PrototypeDungeonGenerator.GenerationParameters parameters)
         {
             if (structure.BranchDataWrapper != null)
                 structure.BranchDataWrapper.BranchPercentage = branchPercent;
 
             structure.StructureMetaData.MarginUnit = margin;
 
-            var generator = new PrototypeDungeonGenerator(structure, generationSeed);
+            var generator = new PrototypeDungeonGenerator(structure, generationSeed, parameters);
             var prototypeDungeon = generator.BuildPrototype();
             _actualStructure = prototypeDungeon.BuildDungeonInUnitySpace(transform);
             OnDungeonRebuilt?.Invoke(_actualStructure);

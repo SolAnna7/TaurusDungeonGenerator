@@ -35,6 +35,9 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         {
             StartElement = startElement;
             StructureMetaData = structureMetaData;
+
+            StructureMetaData.MaxOptionalEndpointNum = RecalculateMaxEndpointNum(startElement);
+            StructureMetaData.MinOptionalEndpointNum = RecalculateMinEndpointNum(startElement);
         }
 
         /// <summary>
@@ -58,6 +61,24 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
 
             if (messages.Count != 0)
                 throw new DungeonValidationException("Error(s) in AbstractDungeonStructure validation:\n - " + String.Join("\n - ", messages));
+        }
+
+        private uint RecalculateMinEndpointNum(AbstractDungeonElement element)
+        {
+            uint res = 0;
+            if (element.ElementMetaData.OptionalNodeData != null)
+                return res;
+            if (element.ElementMetaData.OptionalEndpoint)
+                res++;
+            return element.SubElements.Aggregate(0u, (sum, e) => sum + RecalculateMinEndpointNum(e)) + res;
+        }
+
+        private uint RecalculateMaxEndpointNum(AbstractDungeonElement element)
+        {
+            uint res = 0;
+            if (element.ElementMetaData.OptionalEndpoint)
+                res++;
+            return element.SubElements.Aggregate(0u, (sum, e) => sum + RecalculateMaxEndpointNum(e)) + res;
         }
     }
 
@@ -84,9 +105,6 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         /// </summary>
         public NodeMetaData ElementMetaData { get; set; }
 
-        [Obsolete] public bool IsOptional { get; set; } = false;
-        [Obsolete] public bool IsTansit { get; set; } = false;
-
         protected AbstractDungeonElement()
         {
         }
@@ -102,7 +120,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
             this._subElements = new List<AbstractDungeonElement>(subElements);
         }
 
-        public void AddSubElement(AbstractDungeonElement newSub) => _subElements.Add(newSub);
+        // public void AddSubElement(AbstractDungeonElement newSub) => _subElements.Add(newSub);
         public IEnumerable<ITraversableTreeNode<AbstractDungeonElement>> ChildNodes => _subElements;
         public AbstractDungeonElement Value => this;
     }

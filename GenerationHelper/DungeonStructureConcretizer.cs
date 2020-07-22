@@ -37,11 +37,11 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                         copyNode = new DungeonNode(node.Style, (NodeMetaData) node.ElementMetaData.Clone(), subElements);
                     }
 
-                    if (node.IsOptional)
-                        copyNode.MetaData.OptionalNodeData = new OptionalNodeData();
-
-                    if (node.IsTansit)
-                        copyNode.MetaData.OptionalEndpoint = true;
+                    // if (node.IsOptional)
+                    //     copyNode.MetaData.OptionalNodeData = new OptionalNodeData();
+                    //
+                    // if (node.IsTansit)
+                    //     copyNode.MetaData.OptionalEndpoint = true;
 
                     return copyNode;
                 }
@@ -67,11 +67,11 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                     if (replacementNode == null)
                         throw new Exception("This should not happen");
 
-                    if (connection.IsOptional)
-                        replacementNode.MetaData.OptionalNodeData = new OptionalNodeData();
-
-                    if (connection.IsTansit)
-                        replacementNode.MetaData.OptionalEndpoint = true;
+                    // if (connection.IsOptional)
+                    //     replacementNode.MetaData.OptionalNodeData = new OptionalNodeData();
+                    //
+                    // if (connection.IsTansit)
+                    //     replacementNode.MetaData.OptionalEndpoint = true;
 
                     return replacementNode;
                 }
@@ -96,11 +96,11 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                         }
                     }
 
-                    if (nested.IsOptional)
-                        nestedStartNode.MetaData.OptionalNodeData = new OptionalNodeData();
-
-                    if (nested.IsTansit)
-                        nestedStartNode.MetaData.OptionalEndpoint = true;
+                    // if (nested.IsOptional)
+                    //     nestedStartNode.MetaData.OptionalNodeData = new OptionalNodeData();
+                    //
+                    // if (nested.IsTansit)
+                    //     nestedStartNode.MetaData.OptionalEndpoint = true;
 
                     return nestedStartNode;
                 }

@@ -63,7 +63,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Tests
             structure.ValidateStructure();
 
             //WHEN
-            var generator = new PrototypeDungeonGenerator(structure, seed, new PrototypeDungeonGenerator.GenerationParameters() {RequiredOptionalEndpointNumber = optionalPathNumber});
+            var generator = new PrototypeDungeonGenerator(structure, seed, new PrototypeDungeonGenerator.GenerationParameters {RequiredOptionalEndpointNumber = optionalPathNumber});
             var prototypeDungeon = generator.BuildPrototype();
 
             //THEN

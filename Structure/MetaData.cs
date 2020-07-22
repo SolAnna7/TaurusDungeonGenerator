@@ -13,7 +13,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         public BranchDataWrapper BranchDataWrapper { get; set; }
 
         public bool OptionalEndpoint { get; set; } = false;
-        
+
         public List<DungeonNode> ChildOptionalNodes { get; set; } = new List<DungeonNode>();
 
         public OptionalNodeData OptionalNodeData = null;
@@ -40,6 +40,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         public object GetProperty(string key) => TagAndPropertyHolder.GetProperty(key);
 
         public T GetPropertyAs<T>(string key) => TagAndPropertyHolder.GetPropertyAs<T>(key);
+        public bool TryGetPropertyAs<T>(string key, out T value) => TagAndPropertyHolder.TryGetPropertyAs(key, out value);
 
         public bool HasProperty(string key) => TagAndPropertyHolder.HasProperty(key);
         public IEnumerable<Tuple<string, object>> GetProperties() => TagAndPropertyHolder.GetProperties();
@@ -85,7 +86,21 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
     /// </summary>
     public class StructureMetaData : ITagHolder, IPropertyHolder, ICloneable
     {
+        private uint? _minOptionalEndpointNum;
+        private uint? _maxOptionalEndpointNum;
         public float MarginUnit { get; set; }
+
+        public uint MinOptionalEndpointNum
+        {
+            get => _minOptionalEndpointNum ?? throw new Exception("MinOptionalEndpointNum is not set");
+            set => _minOptionalEndpointNum = value;
+        }
+
+        public uint MaxOptionalEndpointNum
+        {
+            get => _maxOptionalEndpointNum ?? throw new Exception("MaxOptionalEndpointNum is not set");
+            set => _maxOptionalEndpointNum = value;
+        }
 
         public StructureMetaData(
             float marginUnit = 0,
@@ -108,6 +123,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         public object GetProperty(string key) => StructurePropertyAndTagHolder.GetProperty(key);
 
         public T GetPropertyAs<T>(string key) => StructurePropertyAndTagHolder.GetPropertyAs<T>(key);
+        public bool TryGetPropertyAs<T>(string key, out T value) => StructurePropertyAndTagHolder.TryGetPropertyAs(key, out value);
 
         public bool HasProperty(string key) => StructurePropertyAndTagHolder.HasProperty(key);
         public IEnumerable<Tuple<string, object>> GetProperties() => StructurePropertyAndTagHolder.GetProperties();
