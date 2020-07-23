@@ -372,7 +372,12 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             // for vertical connections. This is pretty ugly this way...
             if (rotationDiff * nextRoomConnectionTransform.up != roomRotation * selectedConnectionTransform.up)
             {
-                rotationDiff *= Quaternion.AngleAxis(180, selectedConnectionTransform.right) * Quaternion.AngleAxis(180, selectedConnectionTransform.forward);
+                rotationDiff = 
+                    rotationDiff
+                    * Quaternion.AngleAxis(180, selectedConnectionTransform.right)
+                    // * Quaternion.AngleAxis(180, selectedConnectionTransform.forward)
+                    // * Quaternion.AngleAxis(180, selectedConnectionTransform.up)
+                    ;
             }
 
             var nextRoom = GetParentRoom(nextRoomConnectionTransform);

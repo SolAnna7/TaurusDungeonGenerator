@@ -150,3 +150,24 @@
                                               subs:
                                                 - node: DungeonGenerationTest/EndRoom
                                                   optional-end: true
+
+#  vertical-presentation:
+#    structure-properties:
+#      name: "Vertical"
+#      description: "Vertical presentation"
+#    start-node:
+#      node: DungeonGenerationTest/EndRoom
+#      subs:
+#        - connection: DungeonGenerationTest/Corridors
+#          length: 3_5
+#          subs:
+#            - node: DungeonGenerationTest/VerticalTop
+#              subs:
+#                - connection: DungeonGenerationTest/VerticalMiddle
+#                  length: 2_5
+#                  subs: 
+#                    - node: DungeonGenerationTest/VerticalBottom
+#                      subs:
+#                        - connection: DungeonGenerationTest/Corridors
+#                          length: 8
+                  
