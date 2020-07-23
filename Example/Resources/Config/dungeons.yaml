@@ -1,95 +1,49 @@
 ﻿dungeons:
 
-  nested-test:
+  global-nestable-dungeon:
     structure-tags:
       - NESTED_ONLY
     start-node:
       connection: DungeonGenerationTest/Corridors
-      length: 1_2
+      tags:
+        - global-nestable-dungeon-connection
+      length: 1_3
       subs:
         - node: DungeonGenerationTest/MiddleRoom
           tags:
-            - aaa
-            - xxx
-          properties:
-            - aaa:
-                xxx: 1234
-                yyy: 5678
-              
+            - global-nestable-dungeon-end-room
 
-  graph-test:
+  branching-nesting:
     structure-properties:
-      name: "Cross 1"
-      description: "valami description"
-    start-node:
-      node: DungeonGenerationTest/EndRoom
-      subs:
-        - connection: DungeonGenerationTest/Corridors
-          length: 25_30
-          subs:
-            - node: DungeonGenerationTest/Stair
-              subs:
-                - connection: DungeonGenerationTest/Corridors
-                  length: 1_5
-                  subs:
-                    - node: DungeonGenerationTest/MiddleRoom
-                      subs:
-                        - node: DungeonGenerationTest/VerticalRoom
-                          subs:
-                            - nested: dungeons.nested-test
-                              subs:
-                                - connection: DungeonGenerationTest/Corridors
-                                  length: 1_3
-                                  subs:
-                                    - node: DungeonGenerationTest/EndRoom
-                        - connection: DungeonGenerationTest/Corridors
-                          length: 5
-                          subs:
-                            - node: DungeonGenerationTest/CorrX
-                              subs:
-                                - connection: DungeonGenerationTest/Corridors
-                                  length: 7_9
-                                  subs:
-                                    - node: DungeonGenerationTest/EndRoom
-                                - connection: DungeonGenerationTest/Corridors
-                                  length: 1_3
-                                  subs:
-                                    - node: DungeonGenerationTest/EndRoom
-                                - connection: DungeonGenerationTest/Corridors
-                                  length: 10_15
-                                  subs:
-                                    - node: DungeonGenerationTest/EndRoom
-
-  graph-test-2:
+      name: "Branching and Optional routes"
+      description: "Cross like layout with 3 optional path and 2 types of branching."
     global-node-tags:
       - global-node-tag-1
       - global-node-tag-2
     inline-nested:
-      branch-test:
+      inline-branch-1:
         start-node:
           connection: DungeonGenerationTest/Corridors
           length: 1_3
           subs:
             - node: DungeonGenerationTest/MiddleRoom
-      branch-test-2:
+      inline-branch-2:
         start-node:
           connection: DungeonGenerationTest/Corridors
           length: 3_5
           subs:
             - node: DungeonGenerationTest/EndRoom
     branch-prototypes:
-      - branch-test
-      - branch-test-2
+      - inline-branch-1
+      - inline-branch-2
     branch-max-percent: 100
     start-node:
       node: DungeonGenerationTest/CorrX
       subs:
         - connection: DungeonGenerationTest/Corridors
-          optional: true
           length: 5_10
           subs:
             - node: DungeonGenerationTest/EndRoom
-              optional-end: true
         - connection: DungeonGenerationTest/Corridors
           optional: true
           length: 5
@@ -108,3 +62,91 @@
           subs:
             - node: DungeonGenerationTest/EndRoom
               optional-end: true
+
+
+  nesting-presentation:
+    structure-properties:
+      name: "Nesting"
+      description: "Nesting presentation. One nested part continues in a normal main path"
+    start-node:
+      node: DungeonGenerationTest/EndRoom
+      subs:
+        - connection: DungeonGenerationTest/Corridors
+          length: 10_20
+          subs:
+            - node: DungeonGenerationTest/CorrX
+              subs:
+                - nested: dungeons.global-nestable-dungeon
+                  subs:
+                    - connection: DungeonGenerationTest/Corridors
+                      length: 1_3
+                      subs:
+                        - node: DungeonGenerationTest/EndRoom
+                - nested: dungeons.global-nestable-dungeon
+
+
+
+  realistic-dungeon-1:
+    inline-nested:
+      inline-branch-1:
+        start-node:
+          connection: DungeonGenerationTest/Corridors
+          length: 4_7
+          subs:
+            - node: DungeonGenerationTest/MiddleRoom
+      inline-branch-2:
+        start-node:
+          connection: DungeonGenerationTest/Corridors
+          length: 2_5
+          subs:
+            - node: DungeonGenerationTest/CorrX
+    branch-prototypes:
+      - inline-branch-1
+      - inline-branch-2
+    branch-max-percent: 100
+    structure-properties:
+      name: "Realistic dungeon layout"
+      description: "Realistic dungeon layout"
+    start-node:
+      node: DungeonGenerationTest/EndRoom
+      subs:
+        - connection: DungeonGenerationTest/Corridors
+          length: 5_10
+          subs:
+            - node: DungeonGenerationTest/MiddleRoom
+              subs:
+                - connection: DungeonGenerationTest/Corridors
+                  length: 5_10
+                  subs:
+                    - node: DungeonGenerationTest/CorridorsNormalBig
+                      subs:
+                        - connection: DungeonGenerationTest/CorridorsBig
+                          length: 3
+                          subs:
+                            - node: DungeonGenerationTest/BigRoom
+                              subs:
+                              - node: DungeonGenerationTest/CorridorsNormalBig
+                                subs:
+                                - node: DungeonGenerationTest/MiddleRoom
+                                  subs:
+                                    - connection: DungeonGenerationTest/Corridors
+                                      length: 5_10
+                                      subs:
+                                        - node: DungeonGenerationTest/MiddleRoom
+                                          subs:
+                                            - connection: DungeonGenerationTest/Corridors
+                                              length: 5_10
+                                              subs:
+                                                - node: DungeonGenerationTest/EndRoom
+                                            - connection: DungeonGenerationTest/Corridors
+                                              length: 5_10
+                                              optional: true
+                                              subs:
+                                                - node: DungeonGenerationTest/EndRoom
+                                                  optional-end: true
+                                            - connection: DungeonGenerationTest/Corridors
+                                              length: 5_10
+                                              optional: true
+                                              subs:
+                                                - node: DungeonGenerationTest/EndRoom
+                                                  optional-end: true

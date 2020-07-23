@@ -12,6 +12,9 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
     /// </summary>
     internal static class DungeonStructureConcretizer
     {
+        // ReSharper disable once InconsistentNaming
+        public static string NESTED_TAG => "#NESTED";
+
         internal static DungeonStructure ConcretizeStructure(AbstractDungeonStructure inputStructure, Random random)
         {
             var structure = new DungeonStructure(ConcretizeDungeonTree(inputStructure.StartElement, random,
@@ -36,13 +39,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                         List<DungeonNode> subElements = node.SubElements.Select(element => ConcretizeDungeonTree(element, random, embeddedDungeons)).ToList();
                         copyNode = new DungeonNode(node.Style, (NodeMetaData) node.ElementMetaData.Clone(), subElements);
                     }
-
-                    // if (node.IsOptional)
-                    //     copyNode.MetaData.OptionalNodeData = new OptionalNodeData();
-                    //
-                    // if (node.IsTansit)
-                    //     copyNode.MetaData.OptionalEndpoint = true;
-
+                    
                     return copyNode;
                 }
             }
@@ -67,12 +64,6 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                     if (replacementNode == null)
                         throw new Exception("This should not happen");
 
-                    // if (connection.IsOptional)
-                    //     replacementNode.MetaData.OptionalNodeData = new OptionalNodeData();
-                    //
-                    // if (connection.IsTansit)
-                    //     replacementNode.MetaData.OptionalEndpoint = true;
-
                     return replacementNode;
                 }
             }
@@ -83,6 +74,8 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                     DungeonNode[] abstractSubElements = nested.SubElements.Select(element => ConcretizeDungeonTree(element, random, embeddedDungeons)).ToArray();
                     DungeonNode nestedStartNode = ConcretizeStructure(embeddedDungeons[nested.Path], random).StartElement;
 
+                    nestedStartNode.TraverseDepthFirst().ForEach(x=>x.MetaData.AddTag(NESTED_TAG));
+                    
                     if (abstractSubElements.Length > 0)
                     {
                         List<DungeonNode> endNodeCollector = new List<DungeonNode>();
@@ -95,12 +88,6 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                             endNodeCollector[i].AddSubElement(abstractSubElements[i]);
                         }
                     }
-
-                    // if (nested.IsOptional)
-                    //     nestedStartNode.MetaData.OptionalNodeData = new OptionalNodeData();
-                    //
-                    // if (nested.IsTansit)
-                    //     nestedStartNode.MetaData.OptionalEndpoint = true;
 
                     return nestedStartNode;
                 }

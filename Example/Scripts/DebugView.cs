@@ -32,7 +32,7 @@ namespace TaurusDungeonGenerator.Example.Scripts
                     if (text != null)
                     {
                         var mousePosition = Input.mousePosition;
-                        GUI.Label(new Rect(mousePosition.x + 15, Screen.height - mousePosition.y + 10, 200, 100), text);
+                        GUI.Label(new Rect(mousePosition.x + 15, Screen.height - mousePosition.y + 10, 500, 500), text);
                     }
                 }
             }

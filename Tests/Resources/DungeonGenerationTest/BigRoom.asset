@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fc795b52353f2184e8d524950f51fb67, type: 3}
-  m_Name: MiddleRoom
+  m_Name: BigRoom
   m_EditorClassIdentifier: 
   rooms:
-  - {fileID: 6294903950994076067, guid: cd474d1cdb22bcb4aaae600c75a44db7, type: 3}
+  - {fileID: 6294903950994076067, guid: 1ea4eb751904fe14fb4a797deafe25ef, type: 3}

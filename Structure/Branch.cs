@@ -11,6 +11,13 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         BranchDataWrapper BranchDataWrapper { get; set; }
     }
 
+    public static class IBranchDataHolderExtensions
+    {
+        public static bool HasBranches(this IBranchDataHolder holder) =>
+            holder?.BranchDataWrapper != null && (
+                holder.BranchDataWrapper.BranchCount.HasValue || holder.BranchDataWrapper.BranchPercentage.HasValue);
+    }
+
     /// <summary>
     /// Dungeon branch (optional extra paths) data
     /// </summary>
@@ -20,10 +27,12 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         /// The possible names of nested dungeons which from the branches should be created
         /// </summary>
         public List<string> BranchPrototypeNames { get; }
+
         /// <summary>
         /// Max number of branches in the dungeon. Either this or BranchPercentage should be filled (but not both)
         /// </summary>
         public int? BranchCount { get; set; }
+
         /// <summary>
         /// Max percentage of free connections where the generator should add a branch in the dungeon. Either this or BranchCount should be filled (but not both)
         /// </summary>

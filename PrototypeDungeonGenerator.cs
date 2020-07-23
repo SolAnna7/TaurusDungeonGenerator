@@ -21,6 +21,12 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
     /// </summary>
     public class PrototypeDungeonGenerator
     {
+        // ReSharper disable once InconsistentNaming
+        public static string MAIN_TAG => "#MAIN";
+
+        // ReSharper disable once InconsistentNaming
+        public static string BRANCH_TAG => "#BRANCH";
+
         private BoundsOctree<RoomPrototype> _virtualSpace;
 
         private readonly DungeonStructure _loadedStructure;
@@ -31,8 +37,9 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
 
         private uint _retryNum = 10;
 
-        private uint maxSteps = 512;
-        private uint _stepsMade;
+        private const uint DefaultMaxSteps = 512;
+
+        private StepBackCounter _stepBackCounter;
 
         private Random _random;
         private int _seed = 0;
@@ -51,6 +58,9 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
 
             if (_generationParameters != null)
                 ParameterizeDungeon();
+
+            if (_stepBackCounter == null)
+                _stepBackCounter = new StepBackCounter(DefaultMaxSteps);
         }
 
         public PrototypeDungeon BuildPrototype()
@@ -75,7 +85,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             TryCreateDungeonStructure(firstRoomWrapper);
 
             firstRoomWrapper.ActualGraphElement.MetaData.AddTag("ROOT");
-            firstRoomWrapper.ActualGraphElement.TraverseDepthFirst().ForEach(n => n.MetaData.AddTag("MAIN"));
+            firstRoomWrapper.ActualGraphElement.TraverseDepthFirst().ForEach(n => n.MetaData.AddTag(MAIN_TAG));
 
             CreateBranches(firstRoomWrapper);
 
@@ -95,7 +105,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                 PrepareOptionalRoutes();
 
             if (_generationParameters.GenerationMaxDeadEnds.HasValue)
-                maxSteps = _generationParameters.GenerationMaxDeadEnds.Value;
+                _stepBackCounter = new StepBackCounter(_generationParameters.GenerationMaxDeadEnds.Value);
             if (_generationParameters.GenerationRetryNum.HasValue)
                 _retryNum = _generationParameters.GenerationRetryNum.Value;
         }
@@ -189,7 +199,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                 });
                 _seed += 37 * (1 + _seed);
                 _random = new Random(_seed);
-                _stepsMade = 0;
+                _stepBackCounter.ResetMain();
                 Debug.Log($"Retrying with seed {_seed}");
 
                 i--;
@@ -221,21 +231,35 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             else return;
 
             int extremeCntr = 100;
+            var embeddedDungeons = new ReadOnlyDictionary<string, AbstractDungeonStructure>(_loadedStructure.AbstractStructure.EmbeddedDungeons);
 
             while (openConnections.Count > 0 && remainingBranchNum > 0 && extremeCntr > 0)
             {
-                var selectedBranchType = branchPrototypeNames.GetRandomElement(_random);
-                AbstractDungeonStructure embeddedBranchDungeon = _loadedStructure.AbstractStructure.EmbeddedDungeons[selectedBranchType];
-                DungeonNode concretizedDungeonBranch = DungeonStructureConcretizer.ConcretizeDungeonTree(embeddedBranchDungeon.StartElement, _random,
-                    new ReadOnlyDictionary<string, AbstractDungeonStructure>(_loadedStructure.AbstractStructure.EmbeddedDungeons));
-
                 var connection = openConnections.Pop();
-
-                if (GetPossibleRoomsForConnection(connection, concretizedDungeonBranch).Any(BuildPrototypeRoomRecur))
+                foreach (var selectedBranchType in branchPrototypeNames.Shuffle(_random))
                 {
-                    remainingBranchNum--;
-                    connection.ParentRoomPrototype.ActualGraphElement.AddSubElement(concretizedDungeonBranch);
-                    concretizedDungeonBranch.TraverseDepthFirst().ForEach(n => n.MetaData.AddTag("BRANCH"));
+                    AbstractDungeonStructure embeddedBranchDungeon = _loadedStructure.AbstractStructure.EmbeddedDungeons[selectedBranchType];
+                    DungeonNode concretizedDungeonBranch = DungeonStructureConcretizer.ConcretizeDungeonTree(
+                        embeddedBranchDungeon.StartElement,
+                        _random,
+                        embeddedDungeons);
+                    
+                    _stepBackCounter.ResetBranch();
+
+                    try
+                    {
+                        if (GetPossibleRoomsForConnection(connection, concretizedDungeonBranch).Any(BuildPrototypeRoomRecur))
+                        {
+                            remainingBranchNum--;
+                            connection.ParentRoomPrototype.ActualGraphElement.AddSubElement(concretizedDungeonBranch);
+                            concretizedDungeonBranch.TraverseDepthFirst().ForEach(n => n.MetaData.AddTag(BRANCH_TAG));
+                            break;
+                        }
+                    }
+                    catch (MaxStepsReachedException e)
+                    {
+                        Debug.LogWarning(e.Message);
+                    }
                 }
 
                 extremeCntr--;
@@ -289,7 +313,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
 #endif
                     RemoveRoomAndChildrenRecur(room);
                     room.ParentRoomConnection?.ClearChild();
-                    RoomCreationFailed();
+                    _stepBackCounter.StepBack();
                     return false;
                 }
                 else
@@ -300,16 +324,6 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
 
             return true;
         }
-
-        private void RoomCreationFailed()
-        {
-            _stepsMade++;
-            if (_stepsMade > maxSteps)
-            {
-                throw new MaxStepsReachedException(_stepsMade);
-            }
-        }
-
 
         private IEnumerable<RoomPrototype> GetPossibleRoomsForConnection(RoomPrototypeConnection baseConnection, DungeonNode nextStructureElement)
         {
@@ -473,14 +487,6 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             }
         }
 
-        /// <inheritdoc />
-        private class MaxStepsReachedException : Exception
-        {
-            public MaxStepsReachedException(uint stepNum) : base($"Generation took too many steps {stepNum}")
-            {
-            }
-        }
-
         private static void CollectMetaData(DungeonStructure dungeonStructure)
         {
             CollectMetaData(dungeonStructure.StartElement);
@@ -500,11 +506,6 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             return dungeonElement.MetaData;
         }
 
-        private class GenerationMetaData
-        {
-            public int OptionalEndpointNum { get; set; } = 0;
-            public bool NodeRequired { get; set; } = true;
-        }
 
         private static GenerationMetaData GetGenMetaData(IPropertyHolder holder)
         {
@@ -514,6 +515,56 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             }
 
             return holder.GetPropertyAs<GenerationMetaData>("#GENERATION_META_DATA");
+        }
+
+        private class GenerationMetaData
+        {
+            public int OptionalEndpointNum { get; set; } = 0;
+            public bool NodeRequired { get; set; } = true;
+        }
+
+        /// <inheritdoc />
+        private class MaxStepsReachedException : Exception
+        {
+            public MaxStepsReachedException(string message) : base(message)
+            {
+            }
+        }
+
+        private class StepBackCounter
+        {
+            private readonly uint _maxStep;
+            private uint _actualStepCntr;
+            private bool _main = true;
+
+            public StepBackCounter(uint maxStep)
+            {
+                _maxStep = maxStep;
+                ResetMain();
+            }
+
+            public void ResetMain()
+            {
+                _actualStepCntr = _maxStep;
+                _main = true;
+            }
+
+            public void ResetBranch()
+            {
+                _actualStepCntr = _maxStep / 2;
+                _main = false;
+            }
+
+            public void StepBack()
+            {
+                if (_actualStepCntr == 0)
+                {
+                    string msg = _main ? $"Main path generation took too many steps {_maxStep}" : $"Branch generation took too many steps {_maxStep}";
+                    throw new MaxStepsReachedException(msg);
+                }
+
+                _actualStepCntr--;
+            }
         }
 
         /// <summary>

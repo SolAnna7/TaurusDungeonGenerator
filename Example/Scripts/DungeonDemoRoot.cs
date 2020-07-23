@@ -88,6 +88,8 @@ namespace TaurusDungeonGenerator.Example.Scripts
             // ReSharper disable once Unity.NoNullPropagation
             var selectedStructure = GetSelectedStructure();
 
+            branchSlider.interactable = selectedStructure.HasBranches();
+            
             var structureMetaData = selectedStructure.StructureMetaData;
             descriptionText.text = structureMetaData.TryGetPropertyAs("description", out string desc) ? desc : "";
             if (optionalSlider.minValue != structureMetaData.MinOptionalEndpointNum || optionalSlider.maxValue != structureMetaData.MaxOptionalEndpointNum)
@@ -95,6 +97,8 @@ namespace TaurusDungeonGenerator.Example.Scripts
                 optionalSlider.minValue = structureMetaData.MinOptionalEndpointNum;
                 optionalSlider.maxValue = structureMetaData.MaxOptionalEndpointNum;
                 optionalSlider.value = optionalSlider.maxValue;
+
+                optionalSlider.interactable = !(Math.Abs(optionalSlider.maxValue - optionalSlider.minValue) < 0.01f);
             }
 
             optionalText.text = $"{optionalSlider.minValue}/{optionalSlider.value}/{optionalSlider.maxValue}";

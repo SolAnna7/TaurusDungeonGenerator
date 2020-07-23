@@ -74,16 +74,30 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils
 
         private static Color ElementColorBasedOnPath(DungeonNode node, int depth)
         {
-            bool isBranch = node.MetaData.GetTags().Contains("BRANCH");
-            bool isEndpoint = node.MetaData.OptionalEndpoint;
-            bool isStart = depth == 0;
-
             float intensity = (float) (0.7 + 0.3 * Math.Sin(depth / Math.PI + 5));
+            Color color;
+            if(depth == 0)
+                color = Color.white;
+            else if (node.MetaData.GetTags().Contains(PrototypeDungeonGenerator.BRANCH_TAG))
+                color = Color.red;
+            else if (node.MetaData.OptionalNode)
+                color = Color.yellow;
+            else if (node.MetaData.GetTags().Contains(DungeonStructureConcretizer.NESTED_TAG))
+                color = Color.magenta;
+            else if (node.MetaData.GetTags().Contains(PrototypeDungeonGenerator.MAIN_TAG))
+                color = Color.green;
+            else if(node.MetaData.OptionalEndpoint)
+                color = Color.blue;
+            else
+                color = Color.grey;
 
-            Color color = new Color(
-                isStart || isBranch ? intensity : 0,
-                isStart || !isBranch ? intensity : 0,
-                isStart || isEndpoint ? intensity : 0, 0.95f);
+            color *= intensity;
+
+            // color = new Color(
+            //     isStart || isBranch || isOptional || isNested ? intensity : 0,
+            //     isStart || isMainNotNested || isOptional ? intensity : 0,
+            //     isStart || isEndpoint || isNested ? intensity : 0,
+            //     0.95f);
             return color;
         }
 
