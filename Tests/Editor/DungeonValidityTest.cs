@@ -3,6 +3,7 @@ using NUnit.Framework;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils;
+using static SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure.AbstractDungeonElementBuilder;
 
 // ReSharper disable once CheckNamespace
 namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Tests
@@ -13,23 +14,28 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Tests
         public void TestSpecificDungeonGeneration()
         {
             int seed = 1755192844;
-
-            var structure = new AbstractDungeonStructure(
-                new NodeElement("DungeonGenerationTest/CorrX", NodeMetaData.Empty,
-                    new ConnectionElement("DungeonGenerationTest/Corridors", NodeMetaData.Empty, new RangeI(5, 10),
-                        new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty)),
-                    new ConnectionElement("DungeonGenerationTest/Corridors", NodeMetaData.Empty, new RangeI(5),
-                        new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty)),
-                    new ConnectionElement("DungeonGenerationTest/Corridors", NodeMetaData.Empty, new RangeI(5, 10),
-                        new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty)),
-                    new ConnectionElement("DungeonGenerationTest/Corridors", NodeMetaData.Empty, new RangeI(3, 4),
-                        new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty))
-                ), StructureMetaData.Empty);
+            var structure = AbstractDungeonStructure.Builder.SetStartElement(
+                NodeElement("DungeonGenerationTest/CorrX").AddSubElement(
+                    ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(5, 10)).AddSubElement(
+                        NodeElement("DungeonGenerationTest/EndRoom").Build()
+                    ).Build()
+                ).AddSubElement(
+                    ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(5)).AddSubElement(
+                        NodeElement("DungeonGenerationTest/EndRoom").Build()
+                    ).Build()
+                ).AddSubElement(
+                    ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(5, 10)).AddSubElement(
+                        NodeElement("DungeonGenerationTest/EndRoom").Build()
+                    ).Build()
+                ).AddSubElement(
+                    ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(3, 4)).AddSubElement(
+                        NodeElement("DungeonGenerationTest/EndRoom").Build()
+                    ).Build()
+                ).Build()).Build();
             structure.ValidateStructure();
             var generator = new PrototypeDungeonGenerator(structure, seed);
             generator.BuildPrototype();
         }
-
 
         [Test]
         public void TestOptionalPathGeneration3Path() => TestOptionalPathGeneration(3);
@@ -51,15 +57,33 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Tests
         {
             //GIVEN
             int seed = 123;
-            var structure = new AbstractDungeonStructure(
-                new NodeElement("DungeonGenerationTest/CorrX", NodeMetaData.Empty,
-                    new ConnectionElement("DungeonGenerationTest/Corridors", new NodeMetaData {OptionalNode = true}, new RangeI(5, 10),
-                        new NodeElement("DungeonGenerationTest/EndRoom", new NodeMetaData().Also(m => m.OptionalEndpoint = true))),
-                    new ConnectionElement("DungeonGenerationTest/Corridors", new NodeMetaData {OptionalNode = true}, new RangeI(5),
-                        new NodeElement("DungeonGenerationTest/EndRoom", new NodeMetaData().Also(m => m.OptionalEndpoint = true))),
-                    new ConnectionElement("DungeonGenerationTest/Corridors", new NodeMetaData {OptionalNode = true}, new RangeI(5, 10),
-                        new NodeElement("DungeonGenerationTest/EndRoom", new NodeMetaData().Also(m => m.OptionalEndpoint = true)))
-                ), StructureMetaData.Empty);
+            var structure = AbstractDungeonStructure.Builder.SetStartElement(
+                NodeElement("DungeonGenerationTest/CorrX").AddSubElement(
+                    ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(5, 10))
+                        .SetMetaData(NodeMetaData.Builder.SetOptionalNode(true).Build())
+                        .AddSubElement(
+                            NodeElement("DungeonGenerationTest/EndRoom")
+                                .SetMetaData(NodeMetaData.Builder.SetOptionalEndpoint(true).Build())
+                                .Build()
+                        ).Build()
+                ).AddSubElement(
+                    ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(5))
+                        .SetMetaData(NodeMetaData.Builder.SetOptionalNode(true).Build())
+                        .AddSubElement(
+                            NodeElement("DungeonGenerationTest/EndRoom")
+                                .SetMetaData(NodeMetaData.Builder.SetOptionalEndpoint(true).Build())
+                                .Build()
+                        ).Build()
+                ).AddSubElement(
+                    ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(5, 10))
+                        .SetMetaData(NodeMetaData.Builder.SetOptionalNode(true).Build())
+                        .AddSubElement(
+                            NodeElement("DungeonGenerationTest/EndRoom")
+                                .SetMetaData(NodeMetaData.Builder.SetOptionalEndpoint(true).Build())
+                                .Build()
+                        ).Build()
+                ).Build()
+            ).Build();
             structure.ValidateStructure();
 
             //WHEN

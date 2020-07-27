@@ -1,5 +1,5 @@
-#if true
-//#define TAURUS_DEBUG_LOG
+#if false
+#define TAURUS_DEBUG_LOG
 #endif
 
 using System;
@@ -218,7 +218,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             var branchPrototypeNames = branchDataWrapper.BranchPrototypeNames;
             var openConnections = new Stack<RoomPrototypeConnection>(CollectOpenConnections(firstRoomWrapper).Shuffle(_random));
 
-            int remainingBranchNum;
+            uint remainingBranchNum;
 
             if (branchDataWrapper.BranchCount.HasValue)
             {
@@ -226,7 +226,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             }
             else if (branchDataWrapper.BranchPercentage.HasValue)
             {
-                remainingBranchNum = (int) (branchDataWrapper.BranchPercentage.Value * openConnections.Count / 100);
+                remainingBranchNum = (uint) (branchDataWrapper.BranchPercentage.Value * openConnections.Count / 100);
             }
             else return;
 
@@ -277,6 +277,12 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                 return true;
 
             var subElements = actualGraphElement.SubElements.Where(sub => GetGenMetaData(sub.MetaData).NodeRequired).ToList();
+
+            if (room.ChildRoomConnections.Count < actualGraphElement.ChildNodes.Count())
+            {
+                throw new Exception($"Room {room.RoomResource.name} has {room.ChildRoomConnections.Count} connections, yet the graph element {actualGraphElement.Style} requires {actualGraphElement.ChildNodes.Count()}");
+            }
+            
             for (int connectionsToMake = subElements.Count; connectionsToMake > 0; connectionsToMake--)
             {
                 IList<RoomPrototypeConnection> availableConnections = room.ChildRoomConnections
@@ -309,7 +315,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                 if (failed)
                 {
 #if TAURUS_DEBUG_LOG
-                    Debug.LogWarning($"Failed to make connection {nextElement}[{nextElement.Style}] in room {room.RoomResource} is failed");
+                    Debug.LogWarning($"Failed to make room {room} of element {actualGraphElement.Style}");
 #endif
                     RemoveRoomAndChildrenRecur(room);
                     room.ParentRoomConnection?.ClearChild();

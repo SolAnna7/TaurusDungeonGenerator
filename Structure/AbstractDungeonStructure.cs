@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SnowFlakeGamesAssets.PiscesConfigLoader.Structure;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.Exceptions;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils;
 
@@ -14,7 +15,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         /// <summary>
         /// Root element of the tree
         /// </summary>
-        public AbstractDungeonElement StartElement { get; }
+        public AbstractDungeonElement StartElement { get; private set; }
 
         /// <summary>
         /// Reusable embedded sub dungeons
@@ -29,15 +30,21 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         /// <summary>
         /// Other data of the dungeon
         /// </summary>
-        public StructureMetaData StructureMetaData { get; }
+        public StructureMetaData StructureMetaData { get; private set; }
 
-        public AbstractDungeonStructure(AbstractDungeonElement startElement, StructureMetaData structureMetaData)
+        public static AbstractDungeonStructureBuilder Builder => new AbstractDungeonStructureBuilder();
+
+        private AbstractDungeonStructure(AbstractDungeonElement startElement, StructureMetaData structureMetaData)
         {
             StartElement = startElement;
             StructureMetaData = structureMetaData;
 
             StructureMetaData.MaxOptionalEndpointNum = RecalculateMaxEndpointNum(startElement);
             StructureMetaData.MinOptionalEndpointNum = RecalculateMinEndpointNum(startElement);
+        }
+
+        private AbstractDungeonStructure()
+        {
         }
 
         /// <summary>
@@ -80,6 +87,52 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
                 res++;
             return element.SubElements.Aggregate(0u, (sum, e) => sum + RecalculateMaxEndpointNum(e)) + res;
         }
+
+
+        public class AbstractDungeonStructureBuilder
+        {
+            protected AbstractDungeonStructure newInstance;
+
+            public AbstractDungeonStructureBuilder()
+            {
+                newInstance = new AbstractDungeonStructure();
+                newInstance.StructureMetaData = StructureMetaData.Builder.Empty;
+            }
+
+            public AbstractDungeonStructureBuilder SetMetaData(StructureMetaData s) => this.Also(x => newInstance.StructureMetaData = s);
+            public AbstractDungeonStructureBuilder SetBranchData(BranchDataWrapper wrapper) => this.Also(x => newInstance.BranchDataWrapper = wrapper);
+            public AbstractDungeonStructureBuilder SetEmbeddedDungeons(Dictionary<string, AbstractDungeonStructure> dungeons) => this.Also(x => newInstance.EmbeddedDungeons = dungeons);
+
+            public AbstractDungeonStructureBuilder AddEmbeddedDungeon(string key, AbstractDungeonStructure dungeonStructure) => this.Also(x =>
+            {
+                if (newInstance.EmbeddedDungeons == null)
+                    newInstance.EmbeddedDungeons = new Dictionary<string, AbstractDungeonStructure>();
+                newInstance.EmbeddedDungeons.Add(key, dungeonStructure);
+            });
+
+            public AbstractDungeonStructureBuilderFinisher SetStartElement(AbstractDungeonElement startElement) => new AbstractDungeonStructureBuilderFinisher(newInstance, startElement);
+        }
+
+        public class AbstractDungeonStructureBuilderFinisher : AbstractDungeonStructureBuilder
+        {
+            public AbstractDungeonStructureBuilderFinisher(AbstractDungeonStructure newInstance, AbstractDungeonElement startElement)
+            {
+                this.newInstance = newInstance;
+                this.newInstance.StartElement = startElement;
+            }
+
+            public new AbstractDungeonStructureBuilderFinisher SetMetaData(StructureMetaData s) => (AbstractDungeonStructureBuilderFinisher) base.SetMetaData(s);
+            public new AbstractDungeonStructureBuilderFinisher SetBranchData(BranchDataWrapper wrapper) => (AbstractDungeonStructureBuilderFinisher) base.SetBranchData(wrapper);
+            public new AbstractDungeonStructureBuilderFinisher SetEmbeddedDungeons(Dictionary<string, AbstractDungeonStructure> dungeons) => (AbstractDungeonStructureBuilderFinisher) base.SetEmbeddedDungeons(dungeons);
+
+            public AbstractDungeonStructure Build()
+            {
+                newInstance.StructureMetaData.MaxOptionalEndpointNum = newInstance.RecalculateMaxEndpointNum(newInstance.StartElement);
+                newInstance.StructureMetaData.MinOptionalEndpointNum = newInstance.RecalculateMinEndpointNum(newInstance.StartElement);
+                newInstance.ValidateStructure();
+                return newInstance;
+            }
+        }
     }
 
     /// <summary>
@@ -117,21 +170,55 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
 
         protected AbstractDungeonElement(string style, NodeMetaData elementMetaData, params AbstractDungeonElement[] subElements) : this(style, elementMetaData)
         {
-            this._subElements = new List<AbstractDungeonElement>(subElements);
+            _subElements = new List<AbstractDungeonElement>(subElements);
         }
 
-        // public void AddSubElement(AbstractDungeonElement newSub) => _subElements.Add(newSub);
         public IEnumerable<ITraversableTreeNode<AbstractDungeonElement>> ChildNodes => _subElements;
         public AbstractDungeonElement Value => this;
     }
 
+    public static class AbstractDungeonElementBuilder
+    {
+        public static NodeElement.NodeElementBuilder NodeElement(string style) => new NodeElement.NodeElementBuilder(style);
+        public static ConnectionElement.ConnectionElementBuilder ConnectionElement(string style, RangeI length) => new ConnectionElement.ConnectionElementBuilder(style, length);
+        public static NestedDungeon.NestedDungeonElementBuilder NestedDungeonElement(string path) => new NestedDungeon.NestedDungeonElementBuilder(path);
+    }
+
+
+    /// <summary>
+    /// An abstract dungeon element representing a line of rooms
+    /// </summary>
+    public class NodeElement : AbstractDungeonElement
+    {
+        private NodeElement(string style) : base(style, NodeMetaData.Builder.Empty)
+        {
+        }
+
+        /// <summary>
+        /// True if this is a leaf in the tree
+        /// </summary>
+        public bool IsEndNode => _subElements.Count == 0;
+
+        public class NodeElementBuilder
+        {
+            private readonly NodeElement _element;
+
+            public NodeElementBuilder(string style) => _element = new NodeElement(style);
+
+            public NodeElementBuilder AddSubElement(AbstractDungeonElement element) => this.Also(x => _element.SubElements.Add(element));
+
+            public NodeElementBuilder SetMetaData(NodeMetaData metaData) => this.Also(x => _element.ElementMetaData = metaData);
+
+            public NodeElement Build() => _element;
+        }
+    }
 
     /// <summary>
     /// An abstract dungeon element representing a sequence of rooms
     /// </summary>
     public class ConnectionElement : AbstractDungeonElement
     {
-        public ConnectionElement(string style, NodeMetaData elementMetaData, RangeI length, params AbstractDungeonElement[] subElements) : base(style, elementMetaData, subElements)
+        private ConnectionElement(string style, RangeI length, params AbstractDungeonElement[] subElements) : base(style, NodeMetaData.Builder.Empty, subElements)
         {
             if (length.Min <= 0)
                 throw new Exception("Length must be 1 or greater");
@@ -142,25 +229,19 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         /// length (number of rooms) of the sequence
         /// </summary>
         public RangeI Length { get; }
-    }
 
-    /// <summary>
-    /// An abstract dungeon element representing a line of rooms
-    /// </summary>
-    public class NodeElement : AbstractDungeonElement
-    {
-        public NodeElement(string style, NodeMetaData elementMetaData) : base(style, elementMetaData)
+        public class ConnectionElementBuilder
         {
-        }
+            private readonly ConnectionElement _element;
 
-        public NodeElement(string style, NodeMetaData elementMetaData, params AbstractDungeonElement[] subElements) : base(style, elementMetaData, subElements)
-        {
-        }
+            public ConnectionElementBuilder(string style, RangeI length) => _element = new ConnectionElement(style, length);
 
-        /// <summary>
-        /// True if this is a leaf in the tree
-        /// </summary>
-        public bool IsEndNode => _subElements.Count == 0;
+            public ConnectionElementBuilder AddSubElement(AbstractDungeonElement element) => this.Also(x => _element.SubElements.Add(element));
+
+            public ConnectionElementBuilder SetMetaData(NodeMetaData metaData) => this.Also(x => _element.ElementMetaData = metaData);
+
+            public ConnectionElement Build() => _element;
+        }
     }
 
     /// <summary>
@@ -173,17 +254,23 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         /// </summary>
         public string Path { get; }
 
-        public NestedDungeon(string path, NodeMetaData elementMetaData)
+        private NestedDungeon(string path)
         {
             Path = path;
-            ElementMetaData = elementMetaData;
+            ElementMetaData = NodeMetaData.Builder.Empty;
         }
 
-        public NestedDungeon(string path, NodeMetaData elementMetaData, params AbstractDungeonElement[] subElements)
+        public class NestedDungeonElementBuilder
         {
-            Path = path;
-            _subElements = new List<AbstractDungeonElement>(subElements);
-            ElementMetaData = elementMetaData;
+            private readonly NestedDungeon _element;
+
+            public NestedDungeonElementBuilder(string path) => _element = new NestedDungeon(path);
+
+            public NestedDungeonElementBuilder AddSubElement(AbstractDungeonElement element) => this.Also(x => _element.SubElements.Add(element));
+
+            public NestedDungeonElementBuilder SetMetaData(NodeMetaData metaData) => this.Also(x => _element.ElementMetaData = metaData);
+
+            public NestedDungeon Build() => _element;
         }
     }
 }

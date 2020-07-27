@@ -67,25 +67,28 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
             var structureMetaData = ReadStructureMetaData(dungeonStructureBaseNode);
             AddParentTagsRecursive(firstElement, structureMetaData.GlobalNodePropertyAndTagHolder.GetTags());
 
-            var abstractDungeonStructure = new AbstractDungeonStructure(firstElement, structureMetaData)
-                {BranchDataWrapper = branchData, EmbeddedDungeons = nestedDungeons};
-            abstractDungeonStructure.ValidateStructure();
+            var abstractDungeonStructure = AbstractDungeonStructure.Builder
+                .SetMetaData(structureMetaData)
+                .SetEmbeddedDungeons(nestedDungeons)
+                .SetBranchData(branchData)
+                .SetStartElement(firstElement)
+                .Build();
             return abstractDungeonStructure;
         }
 
         private static StructureMetaData ReadStructureMetaData(ConfigNode dungeonStructureBaseNode)
         {
-            var globalTags = new PropertyAndTagHolder();
+            var structureMetaDataBuilder = StructureMetaData.Builder;
+
             dungeonStructureBaseNode
                 .TryQuery(GLOBAL_NODE_TAGS)
                 .IfPresentGet(tagsNode => tagsNode.AsNodeList().Select(tagNode => tagNode.AsString()),
-                    new HashSet<string>()).ForEach(globalTags.AddTag);
+                    new HashSet<string>()).ForEach(t => structureMetaDataBuilder.AddGlobalTag(t));
 
-            var structureTags = new PropertyAndTagHolder();
             dungeonStructureBaseNode
                 .TryQuery(STRUCTURE_TAGS)
                 .IfPresentGet(tagsNode => tagsNode.AsNodeList().Select(tagNode => tagNode.AsString()),
-                    new HashSet<string>()).ForEach(structureTags.AddTag);
+                    new HashSet<string>()).ForEach(t => structureMetaDataBuilder.AddStructureTag(t));
 
             dungeonStructureBaseNode.TryQuery(STRUCTURE_PROPERTIES).IfPresent(
                 propertiesNode => propertiesNode.AsNode().GetKeys().ForEach(
@@ -93,7 +96,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
                     {
                         if (PropertyLoaders.ContainsKey(propertyKey))
                         {
-                            structureTags.AddProperty(propertyKey, PropertyLoaders[propertyKey](propertiesNode.AsNode().Query(propertyKey)));
+                            structureMetaDataBuilder.AddStructureProperty(propertyKey, PropertyLoaders[propertyKey](propertiesNode.AsNode().Query(propertyKey)));
                         }
                         else
                         {
@@ -102,8 +105,9 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
                     }));
 
             float marginUnit = dungeonStructureBaseNode.TryQuery(MARGIN_UNIT).IfPresentGet(x => x.AsFloat(), 0);
+            structureMetaDataBuilder.SetMargin(marginUnit);
 
-            return new StructureMetaData(marginUnit, structureTags, globalTags);
+            return structureMetaDataBuilder.Build();
         }
 
         private static BranchDataWrapper ReadBranchData(ConfigNode node)
@@ -137,39 +141,49 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
             AbstractDungeonElement element = null;
             config.TryQuery(NODE).IfPresent(node =>
             {
-                var style = node.AsString();
+                var nodeElementBuilder = AbstractDungeonElementBuilder
+                    .NodeElement(node.AsString())
+                    .SetMetaData(CollectMetaData(config));
 
-                var subElementsMaybe = config.TryQuery(SUBS);
-
-                subElementsMaybe.IfPresent(
-                    se => element = new NodeElement(style, CollectMetaData(config), se.AsNodeList().Select(subnode => ReadElement(subnode, nestedDungeonCollector)).ToArray()),
-                    () => element = new NodeElement(style, CollectMetaData(config))
-                );
+                config.TryQuery(SUBS).IfPresent(subElementNodes =>
+                    subElementNodes.AsNodeList()
+                        .Select(subNode => ReadElement(subNode, nestedDungeonCollector))
+                        .ForEach(subElement => nodeElementBuilder.AddSubElement(subElement)));
+                element = nodeElementBuilder.Build();
             });
             if (element == null)
                 config.TryQuery(CONNECTION).IfPresent(connection =>
                 {
                     var style = connection.AsString();
                     var length = config.Query(LENGTH).AsRangeI().ToTaurusRange();
-                    var subElementsMaybe = config.TryQuery(SUBS);
 
-                    subElementsMaybe.IfPresent(
-                        se => { element = new ConnectionElement(style, CollectMetaData(config), length, se.AsNodeList().Select(node => ReadElement(node, nestedDungeonCollector)).ToArray()); },
-                        () => element = new ConnectionElement(style, CollectMetaData(config), length)
-                    );
+                    var connectionElementBuilder = AbstractDungeonElementBuilder
+                        .ConnectionElement(style, length)
+                        .SetMetaData(CollectMetaData(config));
+
+                    config.TryQuery(SUBS).IfPresent(subElementNodes =>
+                        subElementNodes.AsNodeList()
+                            .Select(node => ReadElement(node, nestedDungeonCollector))
+                            .ForEach(subElement => connectionElementBuilder.AddSubElement(subElement)));
+
+                    element = connectionElementBuilder.Build();
                 });
             if (element == null)
                 config.TryQuery(NESTED).IfPresent(nested =>
                 {
                     var path = nested.AsString();
-                    var subElementsMaybe = config.TryQuery(SUBS);
 
                     nestedDungeonCollector.Add(path);
+                    var nestedElementBuilder = AbstractDungeonElementBuilder
+                        .NestedDungeonElement(path)
+                        .SetMetaData(CollectMetaData(config));
 
-                    subElementsMaybe.IfPresent(
-                        se => { element = new NestedDungeon(path, CollectMetaData(config), se.AsNodeList().Select(node => ReadElement(node, nestedDungeonCollector)).ToArray()); },
-                        () => element = new NestedDungeon(path, CollectMetaData(config))
-                    );
+                    config.TryQuery(SUBS).IfPresent(subElementNodes =>
+                        subElementNodes.AsNodeList()
+                            .Select(node => ReadElement(node, nestedDungeonCollector))
+                            .ForEach(subElement => nestedElementBuilder.AddSubElement(subElement)));
+
+                    element = nestedElementBuilder.Build();
                 });
 
             if (element == null)
@@ -191,14 +205,14 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
 
         private static NodeMetaData CollectMetaData(ConfigNode config)
         {
-            NodeMetaData metaData = new NodeMetaData(ReadBranchData(config),
-                new PropertyAndTagHolder()
-                    .Also(p => ReadTags(config).ForEach(p.AddTag)));
+            var nodeMetaDataBuilder = NodeMetaData.Builder
+                .SetBranchData(ReadBranchData(config))
+                .SetOptionalEndpoint(config.TryQuery(OPTIONAL_ENDPOINT).IsPresent)
+                .SetOptionalNode(config.TryQuery(OPTIONAL).IsPresent);
 
-            metaData.OptionalEndpoint = config.TryQuery(OPTIONAL_ENDPOINT).IsPresent;
-            metaData.OptionalNode = config.TryQuery(OPTIONAL).IsPresent;
+            ReadTags(config).ForEach(t => nodeMetaDataBuilder.AddTag(t));
 
-            return metaData;
+            return nodeMetaDataBuilder.Build();
         }
 
         private static RangeI ToTaurusRange(this PiscesConfigLoader.Utils.RangeI source) => new RangeI(source.Min, source.Max);

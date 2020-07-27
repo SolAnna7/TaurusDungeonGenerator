@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils;
+using static SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure.AbstractDungeonElementBuilder;
 
 namespace TaurusDungeonGenerator.Example.Scripts
 {
@@ -11,55 +11,116 @@ namespace TaurusDungeonGenerator.Example.Scripts
 
         private static Dictionary<string, AbstractDungeonStructure> CreateInlineDungeonStructures()
         {
-            var branches = new Dictionary<string, AbstractDungeonStructure>
-            {
-                {
-                    "b1",
-                    new AbstractDungeonStructure(
-                        new ConnectionElement("DungeonGenerationTest/Corridors", NodeMetaData.Empty, new RangeI(1, 5),
-                            new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty)), StructureMetaData.Empty)
-                },
-                {
-                    "b2",
-                    new AbstractDungeonStructure(
-                        new ConnectionElement("DungeonGenerationTest/Corridors", NodeMetaData.Empty, new RangeI(3, 7),
-                            new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty)), StructureMetaData.Empty)
-                }
-            };
-
             var structures = new Dictionary<string, AbstractDungeonStructure>
             {
                 {
-                    "Cross",
-                    new AbstractDungeonStructure(
-                        new NodeElement("DungeonGenerationTest/CorrX", NodeMetaData.Empty,
-                            new ConnectionElement("DungeonGenerationTest/Corridors", NodeMetaData.Empty, new RangeI(5, 10),
-                                new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty)),
-                            new ConnectionElement("DungeonGenerationTest/Corridors", NodeMetaData.Empty, new RangeI(5),
-                                new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty)),
-                            new ConnectionElement("DungeonGenerationTest/Corridors", NodeMetaData.Empty, new RangeI(5, 10),
-                                new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty)),
-                            new ConnectionElement("DungeonGenerationTest/Corridors", NodeMetaData.Empty, new RangeI(3, 4),
-                                new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty))
-                        ), StructureMetaData.Empty)
-                },
-                {
-                    "002",
-                    new AbstractDungeonStructure(
-                        new NodeElement("DungeonGenerationTest/CorrX", NodeMetaData.Empty,
-                            new ConnectionElement("DungeonGenerationTest/Corridors", NodeMetaData.Empty, new RangeI(10, 15),
-                                new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty)),
-                            new ConnectionElement("DungeonGenerationTest/Corridors", NodeMetaData.Empty, new RangeI(3, 4),
-                                new NodeElement("DungeonGenerationTest/EndRoom", NodeMetaData.Empty))
-                        ), StructureMetaData.Empty)
+                    "realistic-dungeon-layout-1",
+                    AbstractDungeonStructure.Builder
+                        .SetEmbeddedDungeons(new Dictionary<string, AbstractDungeonStructure>
+                        {
+                            {
+                                //branch type 1 definition
+                                "inline-branch-1",
+                                AbstractDungeonStructure.Builder.SetStartElement(
+                                    ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(4, 7))
+                                        .AddSubElement(
+                                            NodeElement("DungeonGenerationTest/MiddleRoom").Build()
+                                        ).Build()).Build()
+                            },
+                            {
+                                //branch type 2 definition
+                                "inline-branch-2",
+                                AbstractDungeonStructure.Builder.SetStartElement(
+                                    ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(2, 5))
+                                        .AddSubElement(
+                                            NodeElement("DungeonGenerationTest/CorrX").Build()
+                                        ).Build()).Build()
+                            }
+                        })
+                        .SetBranchData(new BranchDataWrapper(
+                            // the types of dungeons used as branches
+                            new List<string> {"inline-branch-1", "inline-branch-2"},
+                            // maximum percentage of empty connections where branches will be built
+                            50f))
+                        .SetMetaData(StructureMetaData.Builder
+                            // meta data objects for the structure
+                            .AddStructureProperty("name", "Realistic dungeon layout")
+                            .AddStructureProperty("description", "A realistic layout with one miniboss room, one boss room and one to three exits.")
+                            // tags for the structure
+                            .AddStructureTag("structure-tag-1")
+                            .AddStructureTag("structure-tag-2")
+                            // tags for every element
+                            .AddGlobalTag("global-node-tag-1")
+                            .Build())
+                        // the actual structure of the dungeon graph
+                        .SetStartElement(
+                            // a single room chosen from the DungeonGenerationTest/EndRoom RoomCollection
+                            NodeElement("DungeonGenerationTest/EndRoom")
+                                // tags for this node
+                                .SetMetaData(NodeMetaData.Builder.AddTag("entrance").Build())
+                                .AddSubElement(
+                                    // a sequence of connected rooms chosen from the DungeonGenerationTest/Corridors RoomCollection
+                                    // the length of the sequence is between 5 and 10 rooms randomly chosen at generation
+                                    ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(5, 10))
+                                        .AddSubElement(
+                                            NodeElement("DungeonGenerationTest/MiddleRoom")
+                                                .SetMetaData(NodeMetaData.Builder.AddTag("small-boss-room").Build())
+                                                .AddSubElement(
+                                                    ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(5, 10))
+                                                        .AddSubElement(
+                                                            NodeElement("DungeonGenerationTest/CorridorsNormalBig")
+                                                                .AddSubElement(
+                                                                    ConnectionElement("DungeonGenerationTest/CorridorsBig", new RangeI(3))
+                                                                        .AddSubElement(
+                                                                            NodeElement("DungeonGenerationTest/BigRoom")
+                                                                                .SetMetaData(NodeMetaData.Builder.AddTag("big-boss-room").Build())
+                                                                                .AddSubElement(
+                                                                                    NodeElement("DungeonGenerationTest/CorridorsNormalBig")
+                                                                                        .AddSubElement(
+                                                                                            ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(5, 10))
+                                                                                                .AddSubElement(
+                                                                                                    NodeElement("DungeonGenerationTest/MiddleRoom")
+                                                                                                        .AddSubElement(
+                                                                                                            ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(5, 10))
+                                                                                                                .AddSubElement(NodeElement("DungeonGenerationTest/EndRoom")
+                                                                                                                    .SetMetaData(NodeMetaData.Builder.AddTag("exit-1-static").Build())
+                                                                                                                    .Build())
+                                                                                                                .Build())
+                                                                                                        .AddSubElement(
+                                                                                                            ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(5, 10))
+                                                                                                                // this part of the tree is optional
+                                                                                                                .SetMetaData(NodeMetaData.Builder.SetOptionalNode(true).Build())
+                                                                                                                .AddSubElement(NodeElement("DungeonGenerationTest/EndRoom")
+                                                                                                                    .SetMetaData(NodeMetaData.Builder
+                                                                                                                        .AddTag("exit-2-optional")
+                                                                                                                        // end of an optional tree
+                                                                                                                        .SetOptionalEndpoint(true)
+                                                                                                                        .Build())
+                                                                                                                    .Build())
+                                                                                                                .Build())
+                                                                                                        .AddSubElement(
+                                                                                                            ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(5, 10))
+                                                                                                                .SetMetaData(NodeMetaData.Builder.SetOptionalNode(true).Build())
+                                                                                                                .AddSubElement(NodeElement("DungeonGenerationTest/EndRoom")
+                                                                                                                    .SetMetaData(NodeMetaData.Builder
+                                                                                                                        .AddTag("exit-3-optional")
+                                                                                                                        .SetOptionalEndpoint(true)
+                                                                                                                        .Build())
+                                                                                                                    .Build())
+                                                                                                                .Build())
+                                                                                                        .Build())
+                                                                                                .Build())
+                                                                                        .Build())
+                                                                                .Build())
+                                                                        .Build())
+                                                                .Build())
+                                                        .Build())
+                                                .Build())
+                                        .Build())
+                                .Build())
+                        .Build()
                 }
             };
-
-            structures.ForEach(x =>
-            {
-                x.Value.EmbeddedDungeons = branches;
-                x.Value.BranchDataWrapper = new BranchDataWrapper(branches.Keys.ToList(), 0);
-            });
 
             return structures;
         }

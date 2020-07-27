@@ -57,7 +57,7 @@ namespace TaurusDungeonGenerator.Example.Scripts
                 .ForEach(k => result.Add(k.key, k.Item2));
             return result;
 #else
-            CreateInlineDungeonStructures();
+            return CreateInlineDungeonStructures();
 #endif
         }
 
@@ -89,14 +89,17 @@ namespace TaurusDungeonGenerator.Example.Scripts
             var selectedStructure = GetSelectedStructure();
 
             branchSlider.interactable = selectedStructure.HasBranches();
-            
+
             var structureMetaData = selectedStructure.StructureMetaData;
             descriptionText.text = structureMetaData.TryGetPropertyAs("description", out string desc) ? desc : "";
             if (optionalSlider.minValue != structureMetaData.MinOptionalEndpointNum || optionalSlider.maxValue != structureMetaData.MaxOptionalEndpointNum)
             {
+                var tmp = optionalSlider.onValueChanged;
+                optionalSlider.onValueChanged = new Slider.SliderEvent();
                 optionalSlider.minValue = structureMetaData.MinOptionalEndpointNum;
                 optionalSlider.maxValue = structureMetaData.MaxOptionalEndpointNum;
                 optionalSlider.value = optionalSlider.maxValue;
+                optionalSlider.onValueChanged = tmp;
 
                 optionalSlider.interactable = !(Math.Abs(optionalSlider.maxValue - optionalSlider.minValue) < 0.01f);
             }

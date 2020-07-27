@@ -16,8 +16,8 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         public bool OptionalNode { get; set; } = false;
 
         public List<DungeonNode> ChildOptionalNodes { get; set; } = new List<DungeonNode>();
-        
-        public NodeMetaData(BranchDataWrapper branchDataWrapper = null, PropertyAndTagHolder holder = null)
+
+        private NodeMetaData(BranchDataWrapper branchDataWrapper = null, PropertyAndTagHolder holder = null)
         {
             BranchDataWrapper = branchDataWrapper;
 
@@ -27,8 +27,8 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
                 holder.GetProperties().ForEach(tuple => AddProperty(tuple.Item1, tuple.Item2));
             }
         }
-
-        public static NodeMetaData Empty => new NodeMetaData();
+        
+        public static NodeMetaDataBuilder Builder => new NodeMetaDataBuilder();
 
         #region Tag and property data
 
@@ -62,10 +62,28 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         public object Clone()
         {
             var clone = new NodeMetaData((BranchDataWrapper) BranchDataWrapper?.Clone(), (PropertyAndTagHolder) _tagAndPropertyHolder.Clone());
-            clone.OptionalNode =  OptionalNode;
+            clone.OptionalNode = OptionalNode;
             clone.OptionalEndpoint = OptionalEndpoint;
             clone.ChildOptionalNodes = ChildOptionalNodes.ToList();
             return clone;
+        }
+
+        public class NodeMetaDataBuilder
+        {
+            private readonly NodeMetaData _metaData;
+
+            public NodeMetaDataBuilder() => _metaData = new NodeMetaData();
+            public NodeMetaData Empty => new NodeMetaData();
+
+            public NodeMetaData Build() => _metaData;
+
+            public NodeMetaDataBuilder AddTag(string tag) => this.Also(x => _metaData.AddTag(tag));
+            public NodeMetaDataBuilder AddProperty<T>(string key, T val) => this.Also(x => _metaData.AddProperty(key, val));
+            public NodeMetaDataBuilder SetOptionalNode(bool isOptional) => this.Also(x => _metaData.OptionalNode = isOptional);
+            public NodeMetaDataBuilder SetOptionalEndpoint(bool isEndpoint) => this.Also(x => _metaData.OptionalEndpoint = isEndpoint);
+            public NodeMetaDataBuilder SetBranchPercentage(List<string> branchPrototypeNames, float percent) => this.Also(x => _metaData.BranchDataWrapper = new BranchDataWrapper(branchPrototypeNames, percent));
+            public NodeMetaDataBuilder SetBranchNumber(List<string> branchPrototypeNames, uint num) => this.Also(x => _metaData.BranchDataWrapper = new BranchDataWrapper(branchPrototypeNames, num));
+            public NodeMetaDataBuilder SetBranchData(BranchDataWrapper wrapper) => this.Also(x => _metaData.BranchDataWrapper = wrapper);
         }
     }
 
@@ -90,7 +108,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
             set => _maxOptionalEndpointNum = value;
         }
 
-        public StructureMetaData(
+        private StructureMetaData(
             float marginUnit = 0,
             PropertyAndTagHolder structurePropertyAndTagHolder = null,
             PropertyAndTagHolder globalNodePropertyAndTagHolder = null)
@@ -99,8 +117,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
             StructurePropertyAndTagHolder = structurePropertyAndTagHolder ?? new PropertyAndTagHolder();
             GlobalNodePropertyAndTagHolder = globalNodePropertyAndTagHolder ?? new PropertyAndTagHolder();
         }
-
-        public static StructureMetaData Empty => new StructureMetaData();
+        public static StructureMetaDataBuilder Builder => new StructureMetaDataBuilder();
 
         #region Tag and property data
 
@@ -133,6 +150,26 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         public object Clone()
         {
             return new StructureMetaData(MarginUnit, (PropertyAndTagHolder) StructurePropertyAndTagHolder.Clone(), (PropertyAndTagHolder) GlobalNodePropertyAndTagHolder.Clone());
+        }
+
+        public class StructureMetaDataBuilder
+        {
+            private readonly StructureMetaData _metaData;
+
+            public StructureMetaDataBuilder()
+            {
+                _metaData = new StructureMetaData();
+            }
+
+            public StructureMetaData Build() => _metaData;
+
+            public StructureMetaData Empty => new StructureMetaData();
+
+            public StructureMetaDataBuilder AddStructureTag(string tag) => this.Also(x => _metaData.AddTag(tag));
+            public StructureMetaDataBuilder AddGlobalTag(string tag) => this.Also(x => _metaData.GlobalNodePropertyAndTagHolder.AddTag(tag));
+            public StructureMetaDataBuilder AddStructureProperty<T>(string key, T val) => this.Also(x => _metaData.AddProperty(key, val));
+            public StructureMetaDataBuilder AddGlobalProperty<T>(string key, T val) => this.Also(x => _metaData.GlobalNodePropertyAndTagHolder.AddProperty(key, val));
+            public StructureMetaDataBuilder SetMargin(float margin) => this.Also(x => _metaData.MarginUnit = margin);
         }
     }
 }

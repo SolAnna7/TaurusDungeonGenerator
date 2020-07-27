@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
 {
@@ -8,9 +9,10 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
     /// </summary>
     public interface IBranchDataHolder
     {
-        BranchDataWrapper BranchDataWrapper { get; set; }
+        BranchDataWrapper BranchDataWrapper { get; }
     }
 
+    // ReSharper disable once InconsistentNaming
     public static class IBranchDataHolderExtensions
     {
         public static bool HasBranches(this IBranchDataHolder holder) =>
@@ -31,22 +33,22 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         /// <summary>
         /// Max number of branches in the dungeon. Either this or BranchPercentage should be filled (but not both)
         /// </summary>
-        public int? BranchCount { get; set; }
+        public uint? BranchCount { get; set; }
 
         /// <summary>
         /// Max percentage of free connections where the generator should add a branch in the dungeon. Either this or BranchCount should be filled (but not both)
         /// </summary>
         public float? BranchPercentage { get; set; }
 
-        public BranchDataWrapper(List<string> branchPrototypeNames, int branchCount)
+        public BranchDataWrapper(IEnumerable<string> branchPrototypeNames, uint branchCount)
         {
-            BranchPrototypeNames = branchPrototypeNames;
+            BranchPrototypeNames = branchPrototypeNames.ToList();
             BranchCount = branchCount;
         }
 
-        public BranchDataWrapper(List<string> branchPrototypeNames, float branchPercentage)
+        public BranchDataWrapper(IEnumerable<string> branchPrototypeNames, float branchPercentage)
         {
-            BranchPrototypeNames = branchPrototypeNames;
+            BranchPrototypeNames = branchPrototypeNames.ToList();
             BranchPercentage = branchPercentage;
         }
 

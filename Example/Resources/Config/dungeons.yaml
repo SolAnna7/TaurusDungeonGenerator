@@ -1,5 +1,100 @@
 ﻿dungeons:
 
+  realistic-dungeon-layout-1:
+    inline-nested:
+      # branch type 1 definition
+      inline-branch-1:
+        start-node:
+          connection: DungeonGenerationTest/Corridors
+          length: 4_7
+          subs:
+            - node: DungeonGenerationTest/MiddleRoom
+      # branch type 2 definition
+      inline-branch-2:
+        start-node:
+          connection: DungeonGenerationTest/Corridors
+          length: 2_5
+          subs:
+            - node: DungeonGenerationTest/CorrX
+    # the types of dungeons used as branches
+    branch-prototypes:
+      - inline-branch-1
+      - inline-branch-2
+    # maximum percentage of empty connections where branches will be built
+    branch-max-percent: 50
+    # meta data objects for the structure
+    structure-properties:
+      name: "Realistic dungeon layout"
+      description: "A realistic layout with one miniboss room, one boss room and one to three exits."
+    # tags for the structure
+    structure-tags:
+      - structure-tag-1
+      - structure-tag-2
+    # tags for every element
+    global-node-tags:
+      - global-node-tag-1
+    # the actual structure of the dungeon graph
+    start-node:
+      # a single room chosen from the DungeonGenerationTest/EndRoom RoomCollection
+      node: DungeonGenerationTest/EndRoom
+      # tags for this node
+      tags:
+        - entrance
+      subs:
+        # a sequence of connected rooms chosen from the DungeonGenerationTest/Corridors RoomCollection
+        - connection: DungeonGenerationTest/Corridors
+          # the length of the sequence is between 5 and 10 rooms randomly chosen at generation
+          length: 5_10
+          subs:
+            - node: DungeonGenerationTest/MiddleRoom
+              tags:
+                - small-boss-room
+              subs:
+                - connection: DungeonGenerationTest/Corridors
+                  length: 5_10
+                  subs:
+                    - node: DungeonGenerationTest/CorridorsNormalBig
+                      subs:
+                        - connection: DungeonGenerationTest/CorridorsBig
+                          length: 3
+                          subs:
+                            - node: DungeonGenerationTest/BigRoom
+                              tags:
+                                - big-boss-room
+                              subs:
+                                - node: DungeonGenerationTest/CorridorsNormalBig
+                                  subs:
+                                    - connection: DungeonGenerationTest/Corridors
+                                      length: 5_10
+                                      subs:
+                                        - node: DungeonGenerationTest/MiddleRoom
+                                          subs:
+                                            - connection: DungeonGenerationTest/Corridors
+                                              length: 5_10
+                                              subs:
+                                                - node: DungeonGenerationTest/EndRoom
+                                                  tags:
+                                                    - exit-1-static
+                                            - connection: DungeonGenerationTest/Corridors
+                                              length: 5_10
+                                              # this part of the tree is optional
+                                              optional: true
+                                              subs:
+                                                - node: DungeonGenerationTest/EndRoom
+                                                  # end of an optional tree
+                                                  optional-end: true
+                                                  tags:
+                                                    - exit-2-optional
+                                            - connection: DungeonGenerationTest/Corridors
+                                              length: 5_10
+                                              optional: true
+                                              subs:
+                                                - node: DungeonGenerationTest/EndRoom
+                                                  optional-end: true
+                                                  tags:
+                                                    - exit-3-optional
+
+
   global-nestable-dungeon:
     structure-tags:
       - NESTED_ONLY
@@ -85,73 +180,7 @@
                 - nested: dungeons.global-nestable-dungeon
 
 
-
-  realistic-dungeon-1:
-    inline-nested:
-      inline-branch-1:
-        start-node:
-          connection: DungeonGenerationTest/Corridors
-          length: 4_7
-          subs:
-            - node: DungeonGenerationTest/MiddleRoom
-      inline-branch-2:
-        start-node:
-          connection: DungeonGenerationTest/Corridors
-          length: 2_5
-          subs:
-            - node: DungeonGenerationTest/CorrX
-    branch-prototypes:
-      - inline-branch-1
-      - inline-branch-2
-    branch-max-percent: 100
-    structure-properties:
-      name: "Realistic dungeon layout"
-      description: "Realistic dungeon layout"
-    start-node:
-      node: DungeonGenerationTest/EndRoom
-      subs:
-        - connection: DungeonGenerationTest/Corridors
-          length: 5_10
-          subs:
-            - node: DungeonGenerationTest/MiddleRoom
-              subs:
-                - connection: DungeonGenerationTest/Corridors
-                  length: 5_10
-                  subs:
-                    - node: DungeonGenerationTest/CorridorsNormalBig
-                      subs:
-                        - connection: DungeonGenerationTest/CorridorsBig
-                          length: 3
-                          subs:
-                            - node: DungeonGenerationTest/BigRoom
-                              subs:
-                              - node: DungeonGenerationTest/CorridorsNormalBig
-                                subs:
-                                - node: DungeonGenerationTest/MiddleRoom
-                                  subs:
-                                    - connection: DungeonGenerationTest/Corridors
-                                      length: 5_10
-                                      subs:
-                                        - node: DungeonGenerationTest/MiddleRoom
-                                          subs:
-                                            - connection: DungeonGenerationTest/Corridors
-                                              length: 5_10
-                                              subs:
-                                                - node: DungeonGenerationTest/EndRoom
-                                            - connection: DungeonGenerationTest/Corridors
-                                              length: 5_10
-                                              optional: true
-                                              subs:
-                                                - node: DungeonGenerationTest/EndRoom
-                                                  optional-end: true
-                                            - connection: DungeonGenerationTest/Corridors
-                                              length: 5_10
-                                              optional: true
-                                              subs:
-                                                - node: DungeonGenerationTest/EndRoom
-                                                  optional-end: true
-
-#  vertical-presentation:
+                  #  vertical-presentation:
 #    structure-properties:
 #      name: "Vertical"
 #      description: "Vertical presentation"
