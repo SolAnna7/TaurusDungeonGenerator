@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils;
-using static SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure.AbstractDungeonElementBuilder;
+using static SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure.DungeonElementBuilder;
 
 namespace TaurusDungeonGenerator.Example.Scripts
 {
@@ -24,7 +24,7 @@ namespace TaurusDungeonGenerator.Example.Scripts
                                 AbstractDungeonStructure.Builder.SetStartElement(
                                     ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(4, 7))
                                         .AddSubElement(
-                                            NodeElement("DungeonGenerationTest/MiddleRoom").Build()
+                                            NodeElement("DungeonGenerationTest/MiddleRoom")
                                         ).Build()).Build()
                             },
                             {
@@ -33,7 +33,7 @@ namespace TaurusDungeonGenerator.Example.Scripts
                                 AbstractDungeonStructure.Builder.SetStartElement(
                                     ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(2, 5))
                                         .AddSubElement(
-                                            NodeElement("DungeonGenerationTest/CorrX").Build()
+                                            NodeElement("DungeonGenerationTest/CorrX")
                                         ).Build()).Build()
                             }
                         })
@@ -89,34 +89,24 @@ namespace TaurusDungeonGenerator.Example.Scripts
                                                                                                         .AddSubElement(
                                                                                                             ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(5, 10))
                                                                                                                 // this part of the tree is optional
-                                                                                                                .SetMetaData(NodeMetaData.Builder.SetOptionalNode(true).Build())
+                                                                                                                .SetMetaData(NodeMetaData.Builder.SetOptionalNode().Build())
                                                                                                                 .AddSubElement(NodeElement("DungeonGenerationTest/EndRoom")
                                                                                                                     .SetMetaData(NodeMetaData.Builder
                                                                                                                         .AddTag("exit-2-optional")
                                                                                                                         // end of an optional tree
-                                                                                                                        .SetOptionalEndpoint(true)
+                                                                                                                        .SetOptionalEndpoint()
                                                                                                                         .Build())
                                                                                                                     .Build())
                                                                                                                 .Build())
                                                                                                         .AddSubElement(
                                                                                                             ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(5, 10))
-                                                                                                                .SetMetaData(NodeMetaData.Builder.SetOptionalNode(true).Build())
+                                                                                                                .SetMetaData(NodeMetaData.Builder.SetOptionalNode().Build())
                                                                                                                 .AddSubElement(NodeElement("DungeonGenerationTest/EndRoom")
                                                                                                                     .SetMetaData(NodeMetaData.Builder
                                                                                                                         .AddTag("exit-3-optional")
-                                                                                                                        .SetOptionalEndpoint(true)
+                                                                                                                        .SetOptionalEndpoint()
                                                                                                                         .Build())
-                                                                                                                    .Build())
-                                                                                                                .Build())
-                                                                                                        .Build())
-                                                                                                .Build())
-                                                                                        .Build())
-                                                                                .Build())
-                                                                        .Build())
-                                                                .Build())
-                                                        .Build())
-                                                .Build())
-                                        .Build())
+                                                                                                                )))))))))))
                                 .Build())
                         .Build()
                 }

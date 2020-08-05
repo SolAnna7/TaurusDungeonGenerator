@@ -73,6 +73,7 @@
                                               length: 5_10
                                               subs:
                                                 - node: DungeonGenerationTest/EndRoom
+                                                  optional-end: true
                                                   tags:
                                                     - exit-1-static
                                             - connection: DungeonGenerationTest/Corridors

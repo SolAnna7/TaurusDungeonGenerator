@@ -79,8 +79,8 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
 
             public NodeMetaDataBuilder AddTag(string tag) => this.Also(x => _metaData.AddTag(tag));
             public NodeMetaDataBuilder AddProperty<T>(string key, T val) => this.Also(x => _metaData.AddProperty(key, val));
-            public NodeMetaDataBuilder SetOptionalNode(bool isOptional) => this.Also(x => _metaData.OptionalNode = isOptional);
-            public NodeMetaDataBuilder SetOptionalEndpoint(bool isEndpoint) => this.Also(x => _metaData.OptionalEndpoint = isEndpoint);
+            public NodeMetaDataBuilder SetOptionalNode() => this.Also(x => _metaData.OptionalNode = true);
+            public NodeMetaDataBuilder SetOptionalEndpoint() => this.Also(x => _metaData.OptionalEndpoint = true);
             public NodeMetaDataBuilder SetBranchPercentage(List<string> branchPrototypeNames, float percent) => this.Also(x => _metaData.BranchDataWrapper = new BranchDataWrapper(branchPrototypeNames, percent));
             public NodeMetaDataBuilder SetBranchNumber(List<string> branchPrototypeNames, uint num) => this.Also(x => _metaData.BranchDataWrapper = new BranchDataWrapper(branchPrototypeNames, num));
             public NodeMetaDataBuilder SetBranchData(BranchDataWrapper wrapper) => this.Also(x => _metaData.BranchDataWrapper = wrapper);

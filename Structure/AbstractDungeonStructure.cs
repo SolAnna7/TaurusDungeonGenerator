@@ -177,13 +177,17 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         public AbstractDungeonElement Value => this;
     }
 
-    public static class AbstractDungeonElementBuilder
+    public static class DungeonElementBuilder
     {
         public static NodeElement.NodeElementBuilder NodeElement(string style) => new NodeElement.NodeElementBuilder(style);
         public static ConnectionElement.ConnectionElementBuilder ConnectionElement(string style, RangeI length) => new ConnectionElement.ConnectionElementBuilder(style, length);
         public static NestedDungeon.NestedDungeonElementBuilder NestedDungeonElement(string path) => new NestedDungeon.NestedDungeonElementBuilder(path);
     }
 
+    public interface IElementBuilder<out T> where T : AbstractDungeonElement
+    {
+        T Build();
+    }
 
     /// <summary>
     /// An abstract dungeon element representing a line of rooms
@@ -199,14 +203,14 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         /// </summary>
         public bool IsEndNode => _subElements.Count == 0;
 
-        public class NodeElementBuilder
+        public class NodeElementBuilder : IElementBuilder<NodeElement>
         {
             private readonly NodeElement _element;
 
             public NodeElementBuilder(string style) => _element = new NodeElement(style);
 
             public NodeElementBuilder AddSubElement(AbstractDungeonElement element) => this.Also(x => _element.SubElements.Add(element));
-
+            public NodeElementBuilder AddSubElement<T>(IElementBuilder<T> element) where T : AbstractDungeonElement => this.Also(x => _element.SubElements.Add(element.Build()));
             public NodeElementBuilder SetMetaData(NodeMetaData metaData) => this.Also(x => _element.ElementMetaData = metaData);
 
             public NodeElement Build() => _element;
@@ -230,13 +234,14 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
         /// </summary>
         public RangeI Length { get; }
 
-        public class ConnectionElementBuilder
+        public class ConnectionElementBuilder : IElementBuilder<ConnectionElement>
         {
             private readonly ConnectionElement _element;
 
             public ConnectionElementBuilder(string style, RangeI length) => _element = new ConnectionElement(style, length);
 
             public ConnectionElementBuilder AddSubElement(AbstractDungeonElement element) => this.Also(x => _element.SubElements.Add(element));
+            public ConnectionElementBuilder AddSubElement<T>(IElementBuilder<T> element) where T : AbstractDungeonElement => this.Also(x => _element.SubElements.Add(element.Build()));
 
             public ConnectionElementBuilder SetMetaData(NodeMetaData metaData) => this.Also(x => _element.ElementMetaData = metaData);
 
@@ -260,7 +265,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
             ElementMetaData = NodeMetaData.Builder.Empty;
         }
 
-        public class NestedDungeonElementBuilder
+        public class NestedDungeonElementBuilder : IElementBuilder<NestedDungeon>
         {
             private readonly NestedDungeon _element;
 
@@ -268,6 +273,8 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
 
             public NestedDungeonElementBuilder AddSubElement(AbstractDungeonElement element) => this.Also(x => _element.SubElements.Add(element));
 
+            public NestedDungeonElementBuilder AddSubElement<T>(IElementBuilder<T> element) where T : AbstractDungeonElement => this.Also(x => _element.SubElements.Add(element.Build()));
+            
             public NestedDungeonElementBuilder SetMetaData(NodeMetaData metaData) => this.Also(x => _element.ElementMetaData = metaData);
 
             public NestedDungeon Build() => _element;

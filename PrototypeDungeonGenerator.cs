@@ -128,7 +128,8 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                 throw new Exception($"Dungeon cannot be built with parameters. RequiredOptionalEndpointNum({requiredEndpointNum}) > MinEndpointNum({maxEndpointNum})");
             }
 
-            var remainingOptionalsToDisable = maxEndpointNum - (requiredEndpointNum - minEndpointNum);
+            // var remainingOptionalsToDisable = maxEndpointNum - (requiredEndpointNum - minEndpointNum);
+            var remainingOptionalsToDisable = maxEndpointNum - requiredEndpointNum;
 
             //todo: this algorithm will not work with multiple level options, only top level
             var topLevelOptionalNodes = _loadedStructure.NodeMetaData.ChildOptionalNodes.ToList().OrderByDescending(x => GetGenMetaData(x.MetaData).OptionalEndpointNum).ToList();
@@ -243,7 +244,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
                         embeddedBranchDungeon.StartElement,
                         _random,
                         embeddedDungeons);
-                    
+
                     _stepBackCounter.ResetBranch();
 
                     try
@@ -282,7 +283,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             {
                 throw new Exception($"Room {room.RoomResource.name} has {room.ChildRoomConnections.Count} connections, yet the graph element {actualGraphElement.Style} requires {actualGraphElement.ChildNodes.Count()}");
             }
-            
+
             for (int connectionsToMake = subElements.Count; connectionsToMake > 0; connectionsToMake--)
             {
                 IList<RoomPrototypeConnection> availableConnections = room.ChildRoomConnections
@@ -378,7 +379,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             // for vertical connections. This is pretty ugly this way...
             if (rotationDiff * nextRoomConnectionTransform.up != roomRotation * selectedConnectionTransform.up)
             {
-                rotationDiff = 
+                rotationDiff =
                     rotationDiff
                     * Quaternion.AngleAxis(180, selectedConnectionTransform.right)
                     // * Quaternion.AngleAxis(180, selectedConnectionTransform.forward)

@@ -84,20 +84,15 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils
                 color = Color.yellow;
             else if (node.MetaData.GetTags().Contains(DungeonStructureConcretizer.NESTED_TAG))
                 color = Color.magenta;
-            else if (node.MetaData.GetTags().Contains(PrototypeDungeonGenerator.MAIN_TAG))
-                color = Color.green;
             else if(node.MetaData.OptionalEndpoint)
                 color = Color.blue;
+            else if (node.MetaData.GetTags().Contains(PrototypeDungeonGenerator.MAIN_TAG))
+                color = Color.green;
             else
                 color = Color.grey;
 
             color *= intensity;
 
-            // color = new Color(
-            //     isStart || isBranch || isOptional || isNested ? intensity : 0,
-            //     isStart || isMainNotNested || isOptional ? intensity : 0,
-            //     isStart || isEndpoint || isNested ? intensity : 0,
-            //     0.95f);
             return color;
         }
 

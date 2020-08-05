@@ -141,7 +141,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
             AbstractDungeonElement element = null;
             config.TryQuery(NODE).IfPresent(node =>
             {
-                var nodeElementBuilder = AbstractDungeonElementBuilder
+                var nodeElementBuilder = DungeonElementBuilder
                     .NodeElement(node.AsString())
                     .SetMetaData(CollectMetaData(config));
 
@@ -157,7 +157,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
                     var style = connection.AsString();
                     var length = config.Query(LENGTH).AsRangeI().ToTaurusRange();
 
-                    var connectionElementBuilder = AbstractDungeonElementBuilder
+                    var connectionElementBuilder = DungeonElementBuilder
                         .ConnectionElement(style, length)
                         .SetMetaData(CollectMetaData(config));
 
@@ -174,7 +174,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
                     var path = nested.AsString();
 
                     nestedDungeonCollector.Add(path);
-                    var nestedElementBuilder = AbstractDungeonElementBuilder
+                    var nestedElementBuilder = DungeonElementBuilder
                         .NestedDungeonElement(path)
                         .SetMetaData(CollectMetaData(config));
 
@@ -206,9 +206,11 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
         private static NodeMetaData CollectMetaData(ConfigNode config)
         {
             var nodeMetaDataBuilder = NodeMetaData.Builder
-                .SetBranchData(ReadBranchData(config))
-                .SetOptionalEndpoint(config.TryQuery(OPTIONAL_ENDPOINT).IsPresent)
-                .SetOptionalNode(config.TryQuery(OPTIONAL).IsPresent);
+                .SetBranchData(ReadBranchData(config));
+            if (config.TryQuery(OPTIONAL_ENDPOINT).IsPresent)
+                nodeMetaDataBuilder.SetOptionalEndpoint();
+            if (config.TryQuery(OPTIONAL).IsPresent)
+                nodeMetaDataBuilder.SetOptionalNode();
 
             ReadTags(config).ForEach(t => nodeMetaDataBuilder.AddTag(t));
 

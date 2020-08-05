@@ -3,7 +3,7 @@ using NUnit.Framework;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils;
-using static SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure.AbstractDungeonElementBuilder;
+using static SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure.DungeonElementBuilder;
 
 // ReSharper disable once CheckNamespace
 namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Tests
@@ -60,26 +60,26 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Tests
             var structure = AbstractDungeonStructure.Builder.SetStartElement(
                 NodeElement("DungeonGenerationTest/CorrX").AddSubElement(
                     ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(5, 10))
-                        .SetMetaData(NodeMetaData.Builder.SetOptionalNode(true).Build())
+                        .SetMetaData(NodeMetaData.Builder.SetOptionalNode().Build())
                         .AddSubElement(
                             NodeElement("DungeonGenerationTest/EndRoom")
-                                .SetMetaData(NodeMetaData.Builder.SetOptionalEndpoint(true).Build())
+                                .SetMetaData(NodeMetaData.Builder.SetOptionalEndpoint().Build())
                                 .Build()
                         ).Build()
                 ).AddSubElement(
                     ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(5))
-                        .SetMetaData(NodeMetaData.Builder.SetOptionalNode(true).Build())
+                        .SetMetaData(NodeMetaData.Builder.SetOptionalNode().Build())
                         .AddSubElement(
                             NodeElement("DungeonGenerationTest/EndRoom")
-                                .SetMetaData(NodeMetaData.Builder.SetOptionalEndpoint(true).Build())
+                                .SetMetaData(NodeMetaData.Builder.SetOptionalEndpoint().Build())
                                 .Build()
                         ).Build()
                 ).AddSubElement(
                     ConnectionElement("DungeonGenerationTest/Corridors", new RangeI(5, 10))
-                        .SetMetaData(NodeMetaData.Builder.SetOptionalNode(true).Build())
+                        .SetMetaData(NodeMetaData.Builder.SetOptionalNode().Build())
                         .AddSubElement(
                             NodeElement("DungeonGenerationTest/EndRoom")
-                                .SetMetaData(NodeMetaData.Builder.SetOptionalEndpoint(true).Build())
+                                .SetMetaData(NodeMetaData.Builder.SetOptionalEndpoint().Build())
                                 .Build()
                         ).Build()
                 ).Build()
