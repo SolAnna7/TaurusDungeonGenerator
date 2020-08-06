@@ -27,14 +27,15 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
         /// Requires the GameConfig to be initiated
         /// </summary>
         /// <param name="dungeonPath">The absolute config path to the dungeon structure</param>
+        /// <param name="configRoot">The root of the config structure</param>
         /// <returns>The loaded AbstractDungeonStructure</returns>
-        public static AbstractDungeonStructure BuildFromConfig(ConfigPath dungeonPath)
+        public static AbstractDungeonStructure BuildFromConfig(ConfigPath dungeonPath, ConfigNode configRoot)
         {
-            var dungeonStructureBaseNode = GameConfig.Query(dungeonPath).AsNode();
-            return BuildFromConfigNode(dungeonStructureBaseNode);
+            var dungeonStructureBaseNode = configRoot.Query(dungeonPath).AsNode();
+            return BuildFromConfigNode(dungeonStructureBaseNode, configRoot);
         }
 
-        private static AbstractDungeonStructure BuildFromConfigNode(ConfigNode dungeonStructureBaseNode)
+        private static AbstractDungeonStructure BuildFromConfigNode(ConfigNode dungeonStructureBaseNode, ConfigNode configRoot)
         {
             ISet<String> nestedDungeonNameCollector = new HashSet<string>();
             Dictionary<string, AbstractDungeonStructure> nestedDungeons = new Dictionary<string, AbstractDungeonStructure>();
@@ -51,7 +52,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
                 var inlineNode = inlineDungeons.Get().AsNode();
                 foreach (var name in inlineNode.GetKeys())
                 {
-                    nestedDungeons.Add(name, BuildFromConfigNode(inlineNode.Query(name).AsNode()));
+                    nestedDungeons.Add(name, BuildFromConfigNode(inlineNode.Query(name).AsNode(), configRoot));
                 }
             }
 
@@ -60,7 +61,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
                 if (!nestedDungeons.ContainsKey(nestedDungeonPath))
                 {
                     var nestedDungeonConfigPath = new ConfigPath(nestedDungeonPath.Split('.'));
-                    nestedDungeons.Add(nestedDungeonPath, BuildFromConfig(nestedDungeonConfigPath));
+                    nestedDungeons.Add(nestedDungeonPath, BuildFromConfig(nestedDungeonConfigPath, configRoot));
                 }
             }
 

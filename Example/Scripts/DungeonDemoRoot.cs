@@ -45,14 +45,13 @@ namespace TaurusDungeonGenerator.Example.Scripts
         {
 #if SFG_PISCES_CONFIG
             Dictionary<string, AbstractDungeonStructure> result = new Dictionary<string, AbstractDungeonStructure>();
-            gameObject.AddComponent<ConfigReaderComponent>();
-            GameConfig.InitConfig();
+            var configRoot = new ConfigBuilder().ParseTextResourceFiles("Config", new ConfigBuilder.YamlTextConfigParser()).Build();
 
             DungeonStructureConfigLoader.RegisterPropertyLoader("description", queryResult => queryResult.AsString());
             DungeonStructureConfigLoader.RegisterPropertyLoader("name", queryResult => queryResult.AsString());
 
-            GameConfig.Query("dungeons").AsNode().GetKeys()
-                .Select(key => (key, DungeonStructureConfigLoader.BuildFromConfig(new ConfigPath("dungeons", key))))
+            configRoot.Query("dungeons").AsNode().GetKeys()
+                .Select(key => (key, DungeonStructureConfigLoader.BuildFromConfig(new ConfigPath("dungeons", key), configRoot)))
                 .Where(x => !x.Item2.StructureMetaData.HasTag("NESTED_ONLY"))
                 .ForEach(k => result.Add(k.key, k.Item2));
             return result;
