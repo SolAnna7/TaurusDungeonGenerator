@@ -12,7 +12,7 @@
 
 ## Features
 - Abstract graph structure definition
-- Store and load structures from config with PiscesConfigLoader ![](https://via.placeholder.com/15/ff0000/000000?text=+)
+- Store and load structures from config with <a href="https://github.com/SolAnna7/PiscesConfigLoader">PiscesConfigLoader</a>
 - Quick layout generation (not using Unity space!)
 - Reusing dungeon plans by nesting
 - Main path and branch generation
@@ -28,20 +28,20 @@
 ## Installation
 
 - Clone into the Assets folder of your Unity project
-- ~~Download from Unity Asset Store~~ ![](https://via.placeholder.com/15/f03c15/000000?text=+) TODO: Link
-- To load the dungeon structures from config files use the PiscesConfigLoader ![](https://via.placeholder.com/15/f03c15/000000?text=+) TODO: Link
+- ~~Download from Unity Asset Store~~
+- To load the dungeon structures from config files use the <a href="https://github.com/SolAnna7/PiscesConfigLoader">PiscesConfigLoader</a>
 
 ## Usage
 
-- Create your room assets
-  - Add the `Room` component to the root
-  ![](https://via.placeholder.com/15/ff0000/000000?text=+) image
-  - Setup your doors with `RoomConnector` component
-  ![](https://via.placeholder.com/15/ff0000/000000?text=+) image
-  - Collect your rooms into `RoomCollection`-s for randomized usage
+##### Create your room assets
+- Add the `Room` component to the root
+  <img src="https://drive.google.com/uc?export=download&id=1-KCNRDNO5NgeoN5nkYQvBieeQrRgN9B2" title="Room capture" alt="Room capture">
+- Setup your doors with `RoomConnector` component
+  <img src="https://drive.google.com/uc?export=download&id=1qkYcCmzJytn2J1knEM4AeBe93nmD38Sg" title="RoomConnector capture" alt="RoomConnector capture">
+- Collect your rooms into `RoomCollection`-s for randomized usage
 
-- Define your dungeon structure in code
-  
+##### Define your dungeon structure
+- In code
  ```c#
   AbstractDungeonStructure.Builder
       .SetEmbeddedDungeons(new Dictionary<string, AbstractDungeonStructure>
@@ -139,7 +139,7 @@
       .Build()
 ```
   
- - Or load from config files using PiscesConfigLoader ![](https://via.placeholder.com/15/ff0000/000000?text=+) TODO: Link
+- Or load from config files using <a href="https://github.com/SolAnna7/PiscesConfigLoader">PiscesConfigLoader</a>
   
  ```yaml
   realistic-dungeon-layout-1:
@@ -238,7 +238,7 @@
                                                     - exit-3-optional
 ```
 
-- Generate your dungeon and build it in unity space
+##### Parameterise and generate your dungeon, then build it in unity space
 
 ```c#
 PrototypeDungeonGenerator generator = new PrototypeDungeonGenerator(inputStructure, 
@@ -247,11 +247,15 @@ PrototypeDungeonGenerator generator = new PrototypeDungeonGenerator(inputStructu
 PrototypeDungeon prototypeDungeon = generator.BuildPrototype();
 DungeonStructure builtStructure = prototypeDungeon.BuildDungeonInUnitySpace(transform);
 ```
-- Profit 🎉 
+##### Profit 🎉 
 
-#### Optional paths
+### Optional paths
 
-#### Margin between elements
+Some subtrees of the main path can be marked as **optional** and nodes inside them as **optional-end**.
+At generation the required number of optional endpoints can be set.
+Use-Case: Reusing the same dungeon with different number of exits.
+
+### Margin between elements
 
 Add additional margin between elements
 This is still an experimental feature
@@ -260,7 +264,7 @@ This is still an experimental feature
 structure.StructureMetaData.MarginUnit = 0.5f;
 ```
 
-#### Debug view
+### Debug view
 
 Use the `DungeonDebugger` static class to
 - Draw in-editor gizmos around the dungeon element with color coded information
