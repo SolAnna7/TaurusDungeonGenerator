@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using SnowFlakeGamesAssets.PiscesConfigLoader;
-using SnowFlakeGamesAssets.PiscesConfigLoader.Component;
 using SnowFlakeGamesAssets.PiscesConfigLoader.Structure;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader;
@@ -45,13 +44,13 @@ namespace TaurusDungeonGenerator.Example.Scripts
         {
 #if SFG_PISCES_CONFIG
             Dictionary<string, AbstractDungeonStructure> result = new Dictionary<string, AbstractDungeonStructure>();
-            var configRoot = new ConfigBuilder().ParseTextResourceFiles("Config", new ConfigBuilder.YamlTextConfigParser()).Build();
+            var configRoot = new ConfigBuilder().ParseTextResourceFiles("ExampleConfig", new ConfigBuilder.YamlTextConfigParser()).Build();
 
             DungeonStructureConfigLoader.RegisterPropertyLoader("description", queryResult => queryResult.AsString());
             DungeonStructureConfigLoader.RegisterPropertyLoader("name", queryResult => queryResult.AsString());
 
-            configRoot.Query("dungeons").AsNode().GetKeys()
-                .Select(key => (key, DungeonStructureConfigLoader.BuildFromConfig(new ConfigPath("dungeons", key), configRoot)))
+            configRoot.Query("example-dungeons").AsNode().GetKeys()
+                .Select(key => (key, DungeonStructureConfigLoader.BuildFromConfig(new ConfigPath("example-dungeons", key), configRoot)))
                 .Where(x => !x.Item2.StructureMetaData.HasTag("NESTED_ONLY"))
                 .ForEach(k => result.Add(k.key, k.Item2));
             return result;

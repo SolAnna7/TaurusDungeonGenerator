@@ -1,4 +1,4 @@
-﻿dungeons:
+﻿example-dungeons:
 
   realistic-dungeon-layout-1:
     inline-nested:
@@ -172,13 +172,13 @@
           subs:
             - node: DungeonGenerationTest/CorrX
               subs:
-                - nested: dungeons.global-nestable-dungeon
+                - nested: example-dungeons.global-nestable-dungeon
                   subs:
                     - connection: DungeonGenerationTest/Corridors
                       length: 1_3
                       subs:
                         - node: DungeonGenerationTest/EndRoom
-                - nested: dungeons.global-nestable-dungeon
+                - nested: example-dungeons.global-nestable-dungeon
 
 
                   #  vertical-presentation:
