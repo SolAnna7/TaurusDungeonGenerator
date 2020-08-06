@@ -8,7 +8,7 @@
 * Download Example Project
 * ~~Asset Store Link~~
 
-![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) Todo: Graphic
+<img src="https://drive.google.com/uc?export=download&id=1-3jRCGoPvjlY8IjOC1aHHUP6srYBUTD6">
 
 ## Features
 - Abstract graph structure definition
@@ -247,7 +247,77 @@ PrototypeDungeonGenerator generator = new PrototypeDungeonGenerator(inputStructu
 PrototypeDungeon prototypeDungeon = generator.BuildPrototype();
 DungeonStructure builtStructure = prototypeDungeon.BuildDungeonInUnitySpace(transform);
 ```
-##### Profit 🎉 
+##### 🎆🎆🎆 Profit 🎆🎆🎆 
+
+### Nested Dungeons
+
+Reuse dungeons as subtrees
+Can continue with children
+Can be defined as global (used from any other dungeon) or inline (reusable only in one main dungeon)
+
+```yaml
+example-dungeons:
+
+  global-nestable-dungeon:
+    start-node:
+      connection: DungeonGenerationTest/Corridors
+      length: 1_3
+      subs:
+        - node: DungeonGenerationTest/MiddleRoom
+
+  nesting-presentation:
+    start-node:
+      node: DungeonGenerationTest/EndRoom
+      subs:
+        - connection: DungeonGenerationTest/Corridors
+          length: 10_20
+          subs:
+            - node: DungeonGenerationTest/CorrX
+              subs:
+                # this nested dungeon continues have child nodes
+                - nested: example-dungeons.global-nestable-dungeon
+                  subs:
+                    - connection: DungeonGenerationTest/Corridors
+                      length: 1_3
+                      subs:
+                        - node: DungeonGenerationTest/EndRoom
+                - nested: example-dungeons.global-nestable-dungeon
+
+```
+
+### Branches
+
+<img src="https://drive.google.com/uc?export=download&id=1-1BtC67YWWFbl975OVW7JnxjmCNwz5yE">
+
+After creating the main tree, other low priority paths can be added. This can be used as a way to add complexity and dead-ends to a dungeon.
+The brances are defined as nested dungeons (global or inline)
+Set the maximum number of unused connectors where brances are tried to be generated. Either as percent `branch-max-percent: 50` or as a number `branch-max-num: 12`
+
+```yaml
+  realistic-dungeon-layout-1:
+    inline-nested:
+      # branch type 1 definition
+      inline-branch-1:
+        start-node:
+          connection: DungeonGenerationTest/Corridors
+          length: 4_7
+          subs:
+            - node: DungeonGenerationTest/MiddleRoom
+      # branch type 2 definition
+      inline-branch-2:
+        start-node:
+          connection: DungeonGenerationTest/Corridors
+          length: 2_5
+          subs:
+            - node: DungeonGenerationTest/CorrX
+    # the types of dungeons used as branches
+    branch-prototypes:
+      - inline-branch-1
+      - inline-branch-2
+    # maximum percentage of empty connections where branches will be built
+    branch-max-percent: 50
+...
+```
 
 ### Optional paths
 
@@ -258,7 +328,7 @@ Use-Case: Reusing the same dungeon with different number of exits.
 ### Margin between elements
 
 Add additional margin between elements
-This is still an experimental feature
+*This is still an experimental feature*
 
 ```c#
 structure.StructureMetaData.MarginUnit = 0.5f;
