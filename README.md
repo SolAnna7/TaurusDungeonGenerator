@@ -267,7 +267,7 @@ Use the `DungeonDebugger` static class to
 - Generate a debug structure using unity cubes with the same colors
 - Generate debug description text
 
-<img src="https://drive.google.com/file/d/1fFFbQxuKtS6gD8i2eDFCKSArJt1K4-yd/view?usp=sharing" title="Debug View" alt="Debug View">
+<img src="https://drive.google.com/uc?export=download&id=1fFFbQxuKtS6gD8i2eDFCKSArJt1K4-yd" title="Debug View" alt="Debug View">
 
 ## Planned features
 
