@@ -11,37 +11,48 @@
 <img src="https://drive.google.com/uc?export=download&id=1-3jRCGoPvjlY8IjOC1aHHUP6srYBUTD6">
 
 ## Features
-- Abstract graph structure definition
-- Store and load structures from config with <a href="https://github.com/SolAnna7/PiscesConfigLoader">PiscesConfigLoader</a>
-- Quick layout generation (not using Unity space!)
-- Reusing dungeon plans by nesting
-- Main path and branch generation
-- Add meta data using tags and properties
-- Optional paths
-- Margin between elements
-- Debug view
+* Abstract graph structure definition
+* Store and load structures from config with <a href="https://github.com/SolAnna7/PiscesConfigLoader">PiscesConfigLoader</a>
+* Quick layout generation (not using Unity space!)
+* Reusing dungeon plans by nesting
+* Main path and branch generation
+* Add meta data using tags and properties
+* Optional paths
+* Margin between elements
+* Debug view
 
 ## System Requirements
 
-* Unity 2018.4 or later 
+* Unity 2018.4 or later
+
+## Dependencies
+
+* [UnityOctree](https://github.com/Nition/UnityOctree) (as git submodule) 
+* [Unity-Reorderable-List](https://github.com/cfoulston/Unity-Reorderable-List) (as git submodule) 
+* [PiscesConfigLoader](https://github.com/SolAnna7/PiscesConfigLoader) (optional, separately installed dependency)
 
 ## Installation
 
-- Clone into the Assets folder of your Unity project
-- ~~Download from Unity Asset Store~~
-- To load the dungeon structures from config files use the <a href="https://github.com/SolAnna7/PiscesConfigLoader">PiscesConfigLoader</a>
+* Clone into the Assets folder of your Unity project
+```
+git clone git@github.com:SolAnna7/TaurusDungeonGenerator.git
+git submodule update --init --recursive
+git submodule update --recursive 
+```
+* ~~Download from Unity Asset Store~~
+* To load the dungeon structures from config files use the [PiscesConfigLoader](https://github.com/SolAnna7/PiscesConfigLoader)
 
 ## Usage
 
 ##### Create your room assets
-- Add the `Room` component to the root
+* Add the `Room` component to the root
   <img src="https://drive.google.com/uc?export=download&id=1-KCNRDNO5NgeoN5nkYQvBieeQrRgN9B2" title="Room capture" alt="Room capture">
-- Setup your doors with `RoomConnector` component
+* Setup your doors with `RoomConnector` component
   <img src="https://drive.google.com/uc?export=download&id=1qkYcCmzJytn2J1knEM4AeBe93nmD38Sg" title="RoomConnector capture" alt="RoomConnector capture">
-- Collect your rooms into `RoomCollection`-s for randomized usage
+* Collect your rooms into `RoomCollection`-s for randomized usage
 
 ##### Define your dungeon structure
-- In code
+* In code
  ```c#
   AbstractDungeonStructure.Builder
       .SetEmbeddedDungeons(new Dictionary<string, AbstractDungeonStructure>
@@ -139,7 +150,7 @@
       .Build()
 ```
   
-- Or load from config files using <a href="https://github.com/SolAnna7/PiscesConfigLoader">PiscesConfigLoader</a>
+* Or load from config files using <a href="https://github.com/SolAnna7/PiscesConfigLoader">PiscesConfigLoader</a>
   
  ```yaml
   realistic-dungeon-layout-1:
@@ -337,21 +348,21 @@ structure.StructureMetaData.MarginUnit = 0.5f;
 ### Debug view
 
 Use the `DungeonDebugger` static class to
-- Draw in-editor gizmos around the dungeon element with color coded information
-- Generate a debug structure using unity cubes with the same colors
-- Generate debug description text
+* Draw in-editor gizmos around the dungeon element with color coded information
+* Generate a debug structure using unity cubes with the same colors
+* Generate debug description text
 
 <img src="https://drive.google.com/uc?export=download&id=1fFFbQxuKtS6gD8i2eDFCKSArJt1K4-yd" title="Debug View" alt="Debug View">
 
 ## Planned features
 
 ### v0.9
-- Room repetition control
-- Path straightness/~~gayness~~ curvedness control
+* Room repetition control
+* Path straightness/~~gayness~~ curvedness control
 ### v1.0
-- Unity Editor extension for dungeon structure creation
+* Unity Editor extension for dungeon structure creation
 ### ?
-- Optional handling refactor: Activate optional paths based on room tags
-- Circles in the layout
-- Variables: Define variables (like random ranges) to reuse in the structure
-- Bounding box for the dungeon
+* Optional handling refactor: Activate optional paths based on room tags
+* Circles in the layout
+* Variables: Define variables (like random ranges) to reuse in the structure
+* Bounding box for the dungeon

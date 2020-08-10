@@ -83,12 +83,12 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
 
             dungeonStructureBaseNode
                 .TryQuery(GLOBAL_NODE_TAGS)
-                .IfPresentGet(tagsNode => tagsNode.AsNodeList().Select(tagNode => tagNode.AsString()),
+                .IfPresentGet(tagsNode => tagsNode.AsList().Select(tagNode => tagNode.AsString()),
                     new HashSet<string>()).ForEach(t => structureMetaDataBuilder.AddGlobalTag(t));
 
             dungeonStructureBaseNode
                 .TryQuery(STRUCTURE_TAGS)
-                .IfPresentGet(tagsNode => tagsNode.AsNodeList().Select(tagNode => tagNode.AsString()),
+                .IfPresentGet(tagsNode => tagsNode.AsList().Select(tagNode => tagNode.AsString()),
                     new HashSet<string>()).ForEach(t => structureMetaDataBuilder.AddStructureTag(t));
 
             dungeonStructureBaseNode.TryQuery(STRUCTURE_PROPERTIES).IfPresent(
@@ -116,7 +116,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
             var maybeQueryResult = node.TryQuery(BRANCH_PROTOTYPES);
             if (maybeQueryResult.IsPresent)
             {
-                var branchNames = maybeQueryResult.Get().AsNodeList().Select(x => x.AsString()).ToList();
+                var branchNames = maybeQueryResult.Get().AsList().Select(x => x.AsString()).ToList();
                 var maybeMaxBranchNum = node.TryQuery(BRANCH_MAX_NUM);
                 var maybeMaxBranchPercent = node.TryQuery(BRANCH_MAX_PERCENT);
 
@@ -147,8 +147,8 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
                     .SetMetaData(CollectMetaData(config));
 
                 config.TryQuery(SUBS).IfPresent(subElementNodes =>
-                    subElementNodes.AsNodeList()
-                        .Select(subNode => ReadElement(subNode, nestedDungeonCollector))
+                    subElementNodes.AsList()
+                        .Select(subNode => ReadElement(subNode.AsNode(), nestedDungeonCollector))
                         .ForEach(subElement => nodeElementBuilder.AddSubElement(subElement)));
                 element = nodeElementBuilder.Build();
             });
@@ -163,8 +163,8 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
                         .SetMetaData(CollectMetaData(config));
 
                     config.TryQuery(SUBS).IfPresent(subElementNodes =>
-                        subElementNodes.AsNodeList()
-                            .Select(node => ReadElement(node, nestedDungeonCollector))
+                        subElementNodes.AsList()
+                            .Select(queryResult => ReadElement(queryResult.AsNode(), nestedDungeonCollector))
                             .ForEach(subElement => connectionElementBuilder.AddSubElement(subElement)));
 
                     element = connectionElementBuilder.Build();
@@ -180,8 +180,8 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
                         .SetMetaData(CollectMetaData(config));
 
                     config.TryQuery(SUBS).IfPresent(subElementNodes =>
-                        subElementNodes.AsNodeList()
-                            .Select(node => ReadElement(node, nestedDungeonCollector))
+                        subElementNodes.AsList()
+                            .Select(node => ReadElement(node.AsNode(), nestedDungeonCollector))
                             .ForEach(subElement => nestedElementBuilder.AddSubElement(subElement)));
 
                     element = nestedElementBuilder.Build();
@@ -195,7 +195,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
 
         private static IEnumerable<string> ReadTags(ConfigNode config)
         {
-            return config.TryQuery(TAGS).IfPresentGet(tagsNode => tagsNode.AsNodeList().Select(tagNode => tagNode.AsString()), new List<string>());
+            return config.TryQuery(TAGS).IfPresentGet(tagsNode => tagsNode.AsList().Select(tagNode => tagNode.AsString()), new List<string>());
         }
 
         private static void AddParentTagsRecursive(AbstractDungeonElement element, IEnumerable<string> tags)
