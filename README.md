@@ -35,7 +35,9 @@
 
 * Clone into the Assets folder of your Unity project
 ```
-
+git clone git@github.com:SolAnna7/TaurusDungeonGenerator.git
+cd TaurusDungeonGenerator/
+git submodule update --init --recursive
 ```
 * ~~Download from Unity Asset Store~~
 * To load the dungeon structures from config files use the [PiscesConfigLoader](https://github.com/SolAnna7/PiscesConfigLoader)
