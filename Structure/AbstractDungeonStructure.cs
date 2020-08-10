@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SnowFlakeGamesAssets.PiscesConfigLoader.Structure;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.Exceptions;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils;
 
