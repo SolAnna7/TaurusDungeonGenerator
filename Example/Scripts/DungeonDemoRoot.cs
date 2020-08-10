@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SnowFlakeGamesAssets.PiscesConfigLoader;
-using SnowFlakeGamesAssets.PiscesConfigLoader.Structure;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator;
-using SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader;
 using SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure;
-using SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
+#if SFG_PISCES_CONFIG
+using SnowFlakeGamesAssets.PiscesConfigLoader;
+using SnowFlakeGamesAssets.PiscesConfigLoader.Structure;
+using SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader;
+using SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils;
+#endif
 
 namespace TaurusDungeonGenerator.Example.Scripts
 {
