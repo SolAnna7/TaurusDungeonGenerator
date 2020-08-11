@@ -4,8 +4,8 @@
 
 #### A graph based procedural dungeon generator for Unity
 
-* Download Presentation
-* Download Example Project
+* [Download Presentation](https://drive.google.com/drive/folders/1XDA1_g5tuvnb2khWiTpZuK7bcmDJAn89)
+* [Download Example Project](https://drive.google.com/file/d/1Oz-4GnO_038RL4KZUholrGePtJirvCOE/view?usp=sharing)
 * ~~Asset Store Link~~
 
 <img src="https://drive.google.com/uc?export=download&id=1-3jRCGoPvjlY8IjOC1aHHUP6srYBUTD6">
