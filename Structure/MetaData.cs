@@ -92,6 +92,8 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
     /// </summary>
     public class StructureMetaData : ITagHolder, IPropertyHolder, ICloneable
     {
+        public string DungeonKeyName { get; private set; }
+
         private uint? _minOptionalEndpointNum;
         private uint? _maxOptionalEndpointNum;
         public float MarginUnit { get; set; }
@@ -170,6 +172,8 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
             public StructureMetaDataBuilder AddStructureProperty<T>(string key, T val) => this.Also(x => _metaData.AddProperty(key, val));
             public StructureMetaDataBuilder AddGlobalProperty<T>(string key, T val) => this.Also(x => _metaData.GlobalNodePropertyAndTagHolder.AddProperty(key, val));
             public StructureMetaDataBuilder SetMargin(float margin) => this.Also(x => _metaData.MarginUnit = margin);
+            
+            public StructureMetaDataBuilder SetKeyName(string name) => this.Also(x => _metaData.DungeonKeyName = name);
         }
     }
 }

@@ -81,6 +81,8 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
         {
             var structureMetaDataBuilder = StructureMetaData.Builder;
 
+            structureMetaDataBuilder.SetKeyName(dungeonStructureBaseNode.Path.Last);
+            
             dungeonStructureBaseNode
                 .TryQuery(GLOBAL_NODE_TAGS)
                 .IfPresentGet(tagsNode => tagsNode.AsList().Select(tagNode => tagNode.AsString()),
@@ -101,7 +103,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.ConfigLoader
                         }
                         else
                         {
-                            Debug.LogWarning($"PropertyLoader not found for property key: {propertyKey}");
+                            Debug.LogError($"PropertyLoader not found for property key: {propertyKey}");
                         }
                     }));
 

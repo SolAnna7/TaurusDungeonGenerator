@@ -41,8 +41,8 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
     /// </summary>
     public class PropertyAndTagHolder : IPropertyHolder, ITagHolder, ICloneable
     {
-        private Dictionary<string, object> _properties = new Dictionary<string, object>();
-        private ISet<string> _tags = new HashSet<string>();
+        private readonly Dictionary<string, object> _properties = new Dictionary<string, object>();
+        private readonly ISet<string> _tags = new HashSet<string>();
 
         public object GetProperty(string key) => _properties[key];
 
@@ -50,9 +50,14 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Structure
 
         public bool TryGetPropertyAs<T>(string key, out T value)
         {
-            bool res = _properties.TryGetValue(key, out object tmp);
-            value = (T) tmp;
-            return res;
+            if (_properties.TryGetValue(key, out object tmp))
+            {
+                value = (T) tmp;
+                return true;
+            }
+
+            value = default;
+            return false;
         }
 
         public bool HasProperty(string key) => _properties.ContainsKey(key);
