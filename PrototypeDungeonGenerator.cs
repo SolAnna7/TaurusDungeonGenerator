@@ -338,10 +338,15 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
 
             foreach (var newRoom in GetRandomOrderedRooms(nextStructureElement))
             {
-                IEnumerable<RoomConnector> possibleNextConnections = newRoom
+                var possibleNextConnections = newRoom
                     .GetConnections()
                     .Where(x => x.size.Equals(baseConnection.ParentConnection.size) && x.type == baseConnection.ParentConnection.type)
                     .ToList().Shuffle(_random);
+
+                if (possibleNextConnections.Count == 0)
+                {
+                    throw new Exception($"No suitable connection found in room {newRoom.name} for parent connection with size [{baseConnection.ParentConnection.size}] and type [{baseConnection.ParentConnection.type}]");
+                }
 
                 foreach (var nextRoomConnection in possibleNextConnections)
                 {
@@ -463,7 +468,16 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator
             return roomCollection.rooms[_random.Next(roomCollection.rooms.Count)];
         }
 
-        private IEnumerable<Room> GetRandomOrderedRooms(DungeonNode element) => _loadedRooms[element.Style].rooms.ToList().Shuffle(_random);
+        private IEnumerable<Room> GetRandomOrderedRooms(DungeonNode element)
+        {
+            var rooms = _loadedRooms[element.Style].rooms.ToList();
+            if (rooms.Count == 0)
+            {
+                throw new Exception($"No loaded rooms found for style {element.Style}");
+            }
+
+            return rooms.Shuffle(_random);
+        }
 
         void CloseOpenConnections(RoomPrototype roomPrototype)
         {
