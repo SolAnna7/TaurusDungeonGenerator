@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Boo.Lang;
 
 namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils
 {
@@ -57,7 +56,7 @@ namespace SnowFlakeGamesAssets.TaurusDungeonGenerator.Utils
         /// Kotlin style Let function
         /// Calls the specified function with this value as its argument and returns its result
         /// </summary>
-        public static Tr Let<T, Tr>(this T obj, Function<T, Tr> f) => f(obj);
+        public static Tr Let<T, Tr>(this T obj, Func<T, Tr> f) => f(obj);
 
         #endregion
     }
